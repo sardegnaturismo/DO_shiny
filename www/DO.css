@@ -1,0 +1,42 @@
+.header_left{
+        position: relative;
+        transform: translateY(+60%);
+}
+
+.header_right{
+        float: right;
+        height: 60px;   
+        
+}
+
+.main_map, .border_map{
+        /*border-radius: 10px;
+        border: 2px solid #ddd;
+      
+        /*margin-left: 5px;*/
+          padding: 20px;
+}
+
+
+.flags{
+        float:right;
+        margin-right: 15px;
+}
+
+.flag_right{
+        margin: 2px;
+}
+
+
+#pie_bar, #page_bar{
+        background-color: #ffbc28;
+        padding: 5px;
+}
+
+.pie_class{
+        border-bottom-color = ''
+        
+}
+
+
+
