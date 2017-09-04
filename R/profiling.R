@@ -22,7 +22,7 @@ get_age_range <- function(dataset){
         names(age_range) = c("fasciaeta", "arrivi")
         result <- age_range %>% mutate(fasciaeta = gsub("eta_", "", fasciaeta) %>% gsub("65\\+", ">65", .))
         result$fasciaeta = factor(x = result$fasciaeta, levels = result$fasciaeta)
-        names(result) <- c("età", "arrivi")
+        names(result) <- c("eta", "arrivi")
         result
    
 }
