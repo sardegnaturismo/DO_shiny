@@ -157,8 +157,21 @@ shinyServer(function(input, output, session) {
         
         
         output$proveniences <- renderPlotly({
+                province_abbreviation <- NULL
+                municipality_code <- NULL
+          
+                if (!is.null(input$province_map_shape_click[['id']])){
+                  province_code <- input$province_map_shape_click[['id']]
+                  province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
+                  
+                }
                 
-                proveniences <- get_global_proveniences(aggregate_movements)
+                if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
+                  municipality_code = input$municipalities_map_shape_click[["id"]]
+                }
+                     
+                
+                proveniences <- get_global_proveniences(aggregate_movements, province_abbreviation, municipality_code)
                 ### margins ##
                 m <- list(
                         pad = 4
@@ -220,7 +233,7 @@ shinyServer(function(input, output, session) {
         
         output$age_range <- renderPlotly({
                 age_range <- get_age_range(aggregate_web_data)
-                p <- plot_ly(data = age_range, x = ~età, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = "Distribuzione per fascia di età", bargap = 0.8)
         })
         
