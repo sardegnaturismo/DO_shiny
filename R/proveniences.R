@@ -1,6 +1,6 @@
 get_global_proveniences <- function(dataset){
-        italians <- dataset %>% filter(grepl("^9", codicenazione))
-        foreigners <- dataset %>% filter(!grepl("^9", codicenazione))
+        italians <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("^9999", codicenazione)) %>% filter(anno_rif == 2016) 
+        foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(anno_rif == 2016)
         
         italians$descrizione = "Italia"
         foreigners$descrizione = "Estero"

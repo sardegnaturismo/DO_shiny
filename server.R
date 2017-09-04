@@ -22,7 +22,8 @@ sardinian_provinces <- subset(provinces, provinces$PROVINCIA %in% c("Sassari", "
 municipalities <- readOGR("shapes/Com2016_rprj.shp")
 aggregate_movements <- fread("data/agg_ope_line_20xx.csv")
 aggregate_web_data <- fread("data/agg_ope_web.csv")
-
+map_threshold <- fread("data/soglia_map_prov_com_ope.csv")
+structures <- fread("data/struttura_info_ope.csv")
 
 
 shinyServer(function(input, output, session) {
@@ -84,26 +85,72 @@ shinyServer(function(input, output, session) {
         })
         output$municipalities_map <- renderLeaflet({
                 r <- NULL
+                allowed_municipalities_code <- map_threshold %>% mutate(codicecomune = gsub("^0", "", codicecomune)) %>% filter(esito_unita == 1) %>% select(codicecomune)
+                allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]])
                 if (!is.null(input$province_map_shape_click[[1]])){
 
                         province_code <- input$province_map_shape_click[["id"]]
                         province_symbol <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
                         
                         print("**** province symbol *****")
-                        print(province_symbol)
+                        #print(province_symbol)
                         latitude <- input$province_map_shape_click[["lat"]] 
                         longitude <- input$province_map_shape_click[["lng"]]
                         print(input$province_map_shape_click)
                         
-                        sardinian_municipalities <- subset(municipalities, municipalities$COD_PRO %in% c(province_code))
+                        sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
                         r <- leaflet(sardinian_municipalities)  %>%
                                 setView(lng=longitude, lat=latitude, zoom=8) %>%
                                 addTiles() %>%
-                                addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.8,
+                                addPolygons(color = "#444444", weight = 1, layerId = sardinian_municipalities$PRO_COM, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.8,
                                             fillColor = ~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area),
                                             highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                                                bringToFront = TRUE), label = sardinian_municipalities$COMUNE)
+                                                                                bringToFront = TRUE), label = sardinian_municipalities$COMUNE, labelOptions = labelOptions(clickable = FALSE, noHide = TRUE))
                 }
+        })
+        
+        output$structure_map <- renderLeaflet({
+                print("Inside structure ****")
+                print(input$municipalities_map_shape_click)
+  #################              
+                r <- NULL
+                allowed_municipalities <- map_threshold %>% mutate(codicecomune = gsub("^0", "", codicecomune)) %>% filter(esito_unita == 1)
+                allowed_municipalities_code <- allowed_municipalities %>% select(codicecomune)
+                allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]])
+                struct <- structures %>% mutate(cod_com = gsub("^0", "", cod_com))
+                
+                if (!is.null(input$municipalities_map_shape_click[["id"]])){
+                        
+                        province_code <- input$province_map_shape_click[["id"]]
+                        province_symbol <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
+                        
+                        print("**** municipal parameters *****")
+                        #print(province_symbol)
+                        latitude <- input$municipalities_map_shape_click[["lat"]] 
+                        longitude <- input$municipalities_map_shape_click[["lng"]]
+                        municipal_structures <- struct %>% filter(cod_com == input$municipalities_map_shape_click[["id"]])
+                        municipal_structures <- municipal_structures %>% filter(!(lat == '' | lon == '')) %>% mutate(lat = as.numeric(lat), .) %>% mutate(lon = as.numeric(lon), .)
+                        municipal_structures$lat <- round(municipal_structures$lat, 3)
+                        municipal_structures$lon <- round(municipal_structures$lon, 3)
+                        
+                        print("id comune: ")
+                        print(input$municipalities_map_shape_click[["id"]])
+                        print("municipal structures: ")
+                        print(municipal_structures$denominazione)
+                        
+                        
+                        #sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
+                        r <- leaflet(municipal_structures)  %>%
+                                setView(lng=longitude, lat=latitude, zoom=8) %>%
+                                addTiles() %>%
+                                addMarkers(~lon, ~lat, popup = ~as.character(denominazione), label = ~as.character(denominazione))
+                                # addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.3,
+                                #             fillColor = ~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area),
+                                #             highlightOptions = highlightOptions(color = "white", weight = 2,
+                                #                                                 bringToFront = TRUE), label = sardinian_municipalities$COMUNE)
+                }
+                
+             #########   
         })
         
         

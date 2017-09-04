@@ -52,7 +52,15 @@ shinyUI(fluidPage(
                   leafletOutput("municipalities_map", height = "280")
                         
                 
+          ),
+          column(
+                  width = 6,
+                  class = 'border_map',
+                  leafletOutput("structure_map", height = "280")
+                  
+                  
           )
+          
 
   ),
   div(
