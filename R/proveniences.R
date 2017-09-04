@@ -1,4 +1,17 @@
-get_global_proveniences <- function(dataset){
+get_global_proveniences <- function(dataset, province_abbreviation, municipality_code){
+        if(!is.null(province_abbreviation)){
+          dataset <-  filter(dataset, provincia == province_abbreviation)
+          if (!is.null(municipality_code)){
+            if (substring(municipality_code, 1, 1) == "9"){
+              municipality_code = paste("0", municipality_code, sep = '')
+              print("*** municipality code modified")
+              print(municipality_code)
+            }
+            dataset <- dataset %>% filter(codicecomune == municipality_code)
+          }
+          
+        }
+        
         italians <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("^9999", codicenazione)) %>% filter(anno_rif == 2016) 
         foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(anno_rif == 2016)
         
@@ -7,6 +20,7 @@ get_global_proveniences <- function(dataset){
         d <- rbind(italians, foreigners)
         proveniences <- aggregate(d$tot_arrivi ~ d$descrizione, FUN = sum)
         names(proveniences) = c("provenienza", "arrivi")
+        print(proveniences)
         proveniences
 }
 
