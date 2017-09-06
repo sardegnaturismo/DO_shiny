@@ -36,7 +36,9 @@ shinyUI(fluidPage(
   ),
   div(
        id = "page_bar",
-       htmlOutput("page_bar", container = tags$p) 
+       htmlOutput("map_bar", container = tags$p),
+       actionButton("stop_map_filters", "Elimina filtri mappe", class='stop_filter')
+       
   ),
   
   fluidRow(

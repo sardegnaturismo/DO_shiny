@@ -11,9 +11,11 @@ library(rgdal)
 library(plotly)
 library(data.table)
 library(dplyr)
+library(htmltools)
 source("R/arrivals_presences.R")
 source("R/proveniences.R")
 source("R/profiling.R")
+source("R/utilities.R")
 #source("R/proveniences")
 
 provinces <- readOGR("shapes/Prov2016_rprj.shp", encoding = "UTF-8")
@@ -66,7 +68,7 @@ shinyServer(function(input, output, session) {
         })
         
         
-        output$page_bar <- renderText({
+        output$map_bar <- renderText({
                 
                 selected_area = "Sardegna"
                 out <- NULL
@@ -86,7 +88,7 @@ shinyServer(function(input, output, session) {
         output$municipalities_map <- renderLeaflet({
                 r <- NULL
                 allowed_municipalities_code <- map_threshold %>% mutate(codicecomune = gsub("^0", "", codicecomune)) %>% filter(esito_unita == 1) %>% select(codicecomune)
-                allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]])
+                allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]]) %>% unique(.)
                 if (!is.null(input$province_map_shape_click[[1]])){
 
                         province_code <- input$province_map_shape_click[["id"]]
@@ -118,10 +120,12 @@ shinyServer(function(input, output, session) {
                 allowed_municipalities_code <- allowed_municipalities %>% select(codicecomune)
                 allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]])
                 struct <- structures %>% mutate(cod_com = gsub("^0", "", cod_com))
+
+                province_code <- input$province_map_shape_click[["id"]]
+                municipal_code <- input$municipalities_map_shape_click[["id"]]
                 
-                if (!is.null(input$municipalities_map_shape_click[["id"]])){
-                        
-                        province_code <- input$province_map_shape_click[["id"]]
+                
+                if (!is.null(input$municipalities_map_shape_click[["id"]]) && sameProvince(municipal_code, province_code)){
                         province_symbol <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
                         
                         print("**** municipal parameters *****")
@@ -130,20 +134,31 @@ shinyServer(function(input, output, session) {
                         longitude <- input$municipalities_map_shape_click[["lng"]]
                         municipal_structures <- struct %>% filter(cod_com == input$municipalities_map_shape_click[["id"]])
                         municipal_structures <- municipal_structures %>% filter(!(lat == '' | lon == '')) %>% mutate(lat = as.numeric(lat), .) %>% mutate(lon = as.numeric(lon), .)
+                        
+                      if(nrow(municipal_structures) != 0){
                         municipal_structures$lat <- round(municipal_structures$lat, 3)
                         municipal_structures$lon <- round(municipal_structures$lon, 3)
                         
-                        print("id comune: ")
-                        print(input$municipalities_map_shape_click[["id"]])
+                        print(paste("id comune: ", input$municipalities_map_shape_click[["id"]]))
+                        
                         print("municipal structures: ")
                         print(municipal_structures$denominazione)
                         
+                        m = municipal_structures
                         
                         #sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
                         r <- leaflet(municipal_structures)  %>%
-                                setView(lng=longitude, lat=latitude, zoom=8) %>%
-                                addTiles() %>%
-                                addMarkers(~lon, ~lat, popup = ~as.character(denominazione), label = ~as.character(denominazione))
+                          setView(lng=longitude, lat=latitude, zoom=8) %>%
+                          addTiles() %>%
+                          addMarkers(~lon, ~lat, popup = ~build_marker_popup(denominazione, tipologia, classificazione, mesi_apertura, tot_letti), label = ~as.character(denominazione))
+                      }else{
+                          r <- leaflet(municipal_structures)  %>%
+                          setView(lng=longitude, lat=latitude, zoom=8) %>%
+                          addTiles()
+                        
+                      }
+                      r  
+
                                 # addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.3,
                                 #             fillColor = ~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area),
                                 #             highlightOptions = highlightOptions(color = "white", weight = 2,
@@ -168,6 +183,13 @@ shinyServer(function(input, output, session) {
                 
                 if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
                   municipality_code = input$municipalities_map_shape_click[["id"]]
+                  if (!sameProvince(municipality_code, province_code)){
+                    print("Test not passed!!!")
+                    print(paste("Municipality code", municipality_code))
+                    municipality_code <- NULL
+                    
+                  }
+                  
                 }
                      
                 
@@ -184,6 +206,11 @@ shinyServer(function(input, output, session) {
         
         
         output$prov_by_nation <- renderPlotly({
+              
+          
+          
+          
+          
                 prov_by_nation <- get_provenience_by_nation(aggregate_movements)
                 #prov_by_nation$nazione = factor(x = prov_by_nation$nazione, levels = prov_by_nation$nazione)
                 xform <- list(categoryorder = "array",

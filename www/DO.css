@@ -28,14 +28,38 @@
 }
 
 
-#pie_bar, #page_bar{
+#pie_bar{
         background-color: #ffbc28;
         padding: 5px;
+       
 }
 
+#page_bar{
+        background-color: #ffbc28;
+        padding: 1px;
+        height:50px;
+       
+}
+
+
+#map_bar p{
+        background-color: #ffbc28;
+        padding: 1px;
+        width: 800px;
+  
+}
+
+
+
+
 .pie_class{
-        border-bottom-color = ''
+        border-bottom-color: "";
         
+}
+
+.stop_filter{
+  float: right;
+  margin:5px;
 }
 
 
