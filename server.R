@@ -227,13 +227,20 @@ shinyServer(function(input, output, session) {
                                 legend_title = tr("numero_presenze", change$language)
                         }
                         print("measure_selected")
-                        sardinian_municipalities$measure <- sapply(sardinian_municipalities$PRO_COM, function(x) measure_selected[[2]][measure_selected[[1]] == x])
+                        sardinian_municipalities$measure <- sapply(sardinian_municipalities$PRO_COM, function(x){
+                          if(x %in% measure_selected$municipal_code){
+                            measure_selected[[2]][measure_selected[[1]] == x]                            
+                          }else{
+                            0
+                          }
+                        })
+                        
                         print(measure_selected)
                         
                         pal <- colorNumeric("Purples", 
                                             domain = sardinian_municipalities$measure)
                         
-                        
+                        print(sardinian_municipalities$measure)
                         #~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area)
                         
                         r <- leaflet(sardinian_municipalities)  %>%
@@ -402,12 +409,33 @@ shinyServer(function(input, output, session) {
                 
                 
                 #prov_by_nation$nazione = factor(x = prov_by_nation$nazione, levels = prov_by_nation$nazione)
+                ### axis params ###
+                f2 <- list(
+                  family = "Old Standard TT, serif",
+                  size = 14
+                )
+                a <- list(
+                  title = "AXIS TITLE",
+                  titlefont = f2,
+                  showticklabels = TRUE,
+                  tickangle = 45,
+                  tickfont = f2,
+                  exponentformat = "E"
+                )
+               m <- list(b=110)
+                
+                
+                
+                ###################
+                
                 xform <- list(categoryorder = "array",
-                              categoryarray = provenience_by_nation$nazione, title = "")
+                              categoryarray = provenience_by_nation$nazione, title = "", tickfont = list(size = 9), tickangle = 35)
+                
+                
                 
                 p <- plot_ly(data = provenience_by_nation, x = ~nazione, y = ~arrivi, type = 'bar') %>%
-                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axis_title), marker = list(color = 'rgb(158,202,225)',
-                                line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axis_title, tickfont = list(size = 9)), marker = list(color = 'rgb(158,202,225)',
+                                line = list(color = 'rgb(8,48,107)', width = 1.5)), margin = m) %>%
                         highlight(
                                   persistent = TRUE,
                                   dynamic = TRUE
@@ -429,10 +457,10 @@ shinyServer(function(input, output, session) {
                 
                 
                 xform <- list(categoryorder = "array",
-                              categoryarray = prov_by_region$regione, title = "")
+                              categoryarray = prov_by_region$regione, title = "", tickfont = list(size = 9), tickangle = 35)
                 
                 p <- plot_ly(data = prov_by_region, x = ~regione, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
-                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axix_title))
+                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axix_title, tickfont = list(size = 9)))
                 
         })
         
