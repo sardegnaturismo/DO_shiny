@@ -1,4 +1,4 @@
-get_global_proveniences <- function(dataset, province_abbreviation, municipality_code){
+get_global_proveniences <- function(dataset, province_abbreviation, municipality_code, measure){
         # if(!is.null(province_abbreviation)){
         #   dataset <-  filter(dataset, provincia == province_abbreviation)
         #   if (!is.null(municipality_code)){
@@ -18,13 +18,21 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
         italians$descrizione = "Italia"
         foreigners$descrizione = "Estero"
         d <- rbind(italians, foreigners)
+        
+       
         proveniences <- aggregate(d$tot_arrivi ~ d$descrizione, FUN = sum)
-        names(proveniences) = c("provenienza", "arrivi")
+        measure = tolower(measure)
+        if (!is.null(measure) || measure != "") {
+                if ((measure == 'presenze') || (measure == "presences")){
+                        proveniences <- aggregate(d$tot_presenze ~ d$descrizione, FUN = sum)
+                }
+        }
+        names(proveniences) = c("provenienza", "movimenti")
         print(proveniences)
         proveniences
 }
 
-get_provenience_by_nation <- function(dataset,province_abbreviation, municipality_code){
+get_provenience_by_nation <- function(dataset, province_abbreviation, municipality_code){
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         foreigners <- dataset %>% filter(!grepl("^9", codicenazione))
         proveniences <- aggregate(foreigners$tot_arrivi ~ foreigners$descrizione, FUN = sum)

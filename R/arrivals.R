@@ -8,6 +8,15 @@ get_arrivals <- function(dataset){
         
 }
 
+get_arrivals_by_municipal_code <- function(dataset){
+        data <- dataset[dataset$anno_rif == 2016, ]
+        arrivals <- aggregate(data$tot_arrivi ~ codicecomune, FUN = sum)
+        names(arrivals) <- c("municality_code", "tot_arrivals")
+        arrivals = arrivals[arrivals$municality_code != "", ] %>% gsub("^0", "", .)
+        arrivals
+        
+}
+
 get_presences <- function(dataset){
         ### 2016 Arrivals
         data <- dataset[dataset$anno_rif == 2016, ]
