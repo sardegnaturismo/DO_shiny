@@ -2,12 +2,17 @@
 # This is the user-interface definition of a Shiny web application.
 # You can find out more about building applications with Shiny here:
 #
-# http://shiny.rstudio.com
+
 #
 
 library(shiny)
 library(leaflet)
 library(plotly)
+library(crosstalk)
+source("R/translator.R")
+source("R/utilities.R")
+
+load("internazionalization/translation.bin")
 
 r_colors <- rgb(t(col2rgb(colors()) / 255))
 names(r_colors) <- colors()
@@ -23,21 +28,52 @@ shinyUI(fluidPage(
           tags$img(src="logo_ras.png", class='header_right')
   ),p(), br(),
   div(
-          HTML("<h3>Sistema interattivo di analisi e visualizzazione dei dati sul movimento turistico della Sardegna 2016 
-             (Fonte: <a href='http://operatori.sardegnaturismo.it/it/sired-0'>SIRED</a>) <div class='flags'><img src='bandiera-italia_scalata.png' class='flag_right'><img src='english-flag_resized.png' class='flag_right'></div></h3>") 
+          htmlOutput("header", container = tags$h3),
+          
+          # HTML("<h3>Sistema interattivo di analisi e visualizzazione dei dati sul movimento turistico della Sardegna 2016 
+          #    (Fonte: <a href='http://operatori.sardegnaturismo.it/it/sired-0'>SIRED</a>)</h3>"), 
+          div(
+                  class="flags",
+                  actionButton(
+                          inputId = "it",
+                          class = "btn action_button flag_right",
+                          label = img(src = "bandiera-italia_scalata.png")
+                  ),
+                  
+                  actionButton(
+                          inputId = "en",
+                          class = "btn action_button flag_right", 
+                          label = img(src = "english-flag_resized.png")
+                  )
+                  
+                  
+                  
+          )
+
           # tags$img(src="logost.png", class='header_left'),
           # tags$img(src="logo_ras.png", class='header_right')  
   ),br(),
   
   div(
-          radioButtons("measure", "Selezionare la misura di analisi: ",
-                       c("Arrivi", "Presenze"), selected = "Arrivi")
+          uiOutput("radio")         
+          # radioButtons("measure", tr("misura", language),
+          #               c("Arrivi", "Presenze"), selected = "Arrivi")
           
-  ),
-  div(
-       id = "page_bar",
-       htmlOutput("map_bar", container = tags$p),
-       actionButton("stop_map_filters", "Elimina filtri mappe", class='stop_filter')
+  ), br(),
+  fluidRow(
+          id = "page_bar",
+       column(
+               width = 8,
+               htmlOutput("map_bar", container = tags$p, class="map_bar")
+               
+       ),
+       column(
+               width = 4,
+               uiOutput("map_filter_button")
+               #actionButton("stop_map_filters", "Elimina filtri mappe", class='stop_filter')
+       )
+      
+       
        
   ),
   
@@ -67,13 +103,24 @@ shinyUI(fluidPage(
   ),
   div(
           id='pie_bar',
-          tags$p("Seleziona la provenienza cliccando sugli elementi dei grafici")
-  ),         
+          column(
+                  width = 8,
+                  uiOutput("provenience_bar")
+          ),
+          column(
+                  width = 4,
+                  uiOutput("provenience_filter_button")
+                  
+          )
+          
+          #tags$p("Seleziona la provenienza cliccando sugli elementi dei grafici")
+  ), br(), br(),        
   fluidRow(
         column(
                 offset = 4,
                 width = 4,
                 plotlyOutput("proveniences",  height = '600px')
+                # verbatimTextOutput("prov_click")
         )),br(), br(), br(),
   fluidRow(
           column(
@@ -96,8 +143,17 @@ shinyUI(fluidPage(
   
   
   div(
-          id='pie_bar',
-          tags$p("Seleziona il tipo di turista (dato riferito ai soli arrivi)")
+          id='profiling_bar',
+          column(
+                  width = 8,
+                  uiOutput("profiling_bar_title")
+          ),
+          column(
+                  width = 4,
+                  uiOutput("profiling_filter_button")
+                  
+          )
+
   ), br(), br(), br(),
   fluidRow(
           column(
@@ -106,6 +162,19 @@ shinyUI(fluidPage(
                   plotlyOutput("sex",  height = '600px')                  
                   
           )
+  ), br(), br(), br(),
+  div(
+          id='type_bar',
+          column(
+                  width = 8,
+                  uiOutput("type_bar_title")
+          ),
+          column(
+                  width = 4,
+                  uiOutput("type_filter_button")
+
+          )
+
   ), br(), br(), br(),
   fluidRow(
           column(
@@ -122,27 +191,4 @@ shinyUI(fluidPage(
                   
 
 
-
-  
-  
-  #actionButton("recalc", "New points")
-
-  # Application title
-  # titlePanel("Old Faithful Geyser Data"),
-  # 
-  # # Sidebar with a slider input for number of bins
-  # sidebarLayout(
-  #   sidebarPanel(
-  #     sliderInput("bins",
-  #                 "Number of bins:",
-  #                 min = 1,
-  #                 max = 50,
-  #                 value = 30)
-    
-
-    # Show a plot of the generated distribution
-    # mainPanel(
-    #   plotOutput("distPlot")
-    # )
-  
 ))
