@@ -20,13 +20,26 @@ filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_c
 }
 
 
-build_marker_popup <- function(denominazione, tipologia, classificazione, mesi_apertura, posti_letto){
-    denominazione = paste("<b>Denominazione: </b>", denominazione, "</br>")
-    tipologia = paste("<b>Tipologia: </b>", tipologia, "</br>")
-    classificazione = paste("<b>Classificazione: </b>", classificazione, "</br>")
-    mesi_apertura = paste("<b>Mesi di apertura: </b>", mesi_apertura, "</br>")
-    posti_letto = paste("<b>Posti: </b>", posti_letto)
+build_marker_popup <- function(denominazione, tipologia, classificazione, mesi_apertura, posti_letto, language){
+    
+    # tipologia = tr("tipologia", language)
+    # classificazione = tr("classificazione", language)
+    # mesi_apertura = tr("mesi_apertura", language)
+    # posti_letto = tr("posti_letto", language)
+    denominazione = paste(tr("denominazione", language), denominazione, "</br>")
+    tipologia = paste(tr("tipologia", language), tipologia, "</br>")
+    classificazione = paste(tr("classificazione", language), classificazione, "</br>")
+    mesi_apertura = paste(tr("mesi_apertura", language), mesi_apertura, "</br>")
+    posti_letto = paste(tr("posti_letto", language), posti_letto)
     
     pop_up = paste(denominazione, tipologia, classificazione, mesi_apertura, posti_letto)
     p = paste("<p>", pop_up, "</p>")
 }
+
+
+get_language <- function(language = "it"){
+        language
+}
+
+language = get_language()
+
