@@ -25,29 +25,48 @@
 
 .flag_right{
         margin: 2px;
+        background-color: transparent;
+        border-color: transparent;
+        margin-right: 0px;
+        margin-left: 0px;
+        padding-left: 1px;
+        padding-right: 1px;
+
 }
 
 
-#pie_bar{
+#pie_bar, #profiling_bar, #type_bar{
         background-color: #ffbc28;
-        padding: 5px;
+        /*padding: 5px;*/
+        height: 60px;
+       
        
 }
+#provenience_bar p {
+        margin: 10px;
+}
+
+#profiling_bar p {
+        margin: 10px;
+}
+
+#type_bar p{
+        margin:10px;
+}
+
 
 #page_bar{
         background-color: #ffbc28;
-        padding: 1px;
-        height:50px;
-       
+        height: 60px;
+        margin-left:5px;
+        margin-right: 5px;
+
 }
 
-
-#map_bar p{
-        background-color: #ffbc28;
-        padding: 1px;
-        width: 800px;
-  
+.map_bar{
+        margin: 15px;
 }
+
 
 
 
@@ -59,7 +78,7 @@
 
 .stop_filter{
   float: right;
-  margin:5px;
+  margin-top: 10px;
 }
 
 
