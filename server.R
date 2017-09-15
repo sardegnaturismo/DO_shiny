@@ -323,23 +323,31 @@ shinyServer(function(input, output, session) {
         output$proveniences <- renderPlotly({
                 province_abbreviation <- NULL
                 municipality_code <- NULL
-          
-                if (!is.null(input$province_map_shape_click[['id']])){
-                  province_code <- input$province_map_shape_click[['id']]
-                  province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
-                  print(paste("Province abbreviation: ", province_abbreviation))
-                  
-                }
                 
-                if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
-                  municipality_code = input$municipalities_map_shape_click[["id"]]
-                  if (!sameProvince(municipality_code, province_code)){
-                    print(paste("Municipality code", municipality_code))
-                    municipality_code <- NULL
-                    
-                  }
-                  
-                }
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+                # print("after the call of get_map_selection")
+                # print(paste("selections: ", selections))
+                # # print(paste("province_abbreviation: ", province_abbreviation))
+                # print(paste(is.null(municipality_code)))
+          
+                # if (!is.null(input$province_map_shape_click[['id']])){
+                #   province_code <- input$province_map_shape_click[['id']]
+                #   province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
+                #   print(paste("Province abbreviation: ", province_abbreviation))
+                #   
+                # }
+                # 
+                # if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
+                #   municipality_code = input$municipalities_map_shape_click[["id"]]
+                #   if (!sameProvince(municipality_code, province_code)){
+                #     print(paste("Municipality code", municipality_code))
+                #     municipality_code <- NULL
+                #     
+                #   }
+                #   
+                # }
                 
                      
                 measure = input$measure
@@ -382,29 +390,45 @@ shinyServer(function(input, output, session) {
         # })
         
         output$prov_by_nation <- renderPlotly({
+                # province_abbreviation <- NULL
+                # municipality_code <- NULL
+                # 
+                # if (!is.null(input$province_map_shape_click[['id']])){
+                #         province_code <- input$province_map_shape_click[['id']]
+                #         province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
+                #         
+                # }
+                # 
+                # if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
+                #         municipality_code = input$municipalities_map_shape_click[["id"]]
+                #         if (!sameProvince(municipality_code, province_code)){
+                #                 municipality_code <- NULL
+                #         }
+                #         
+                # }
+          
                 province_abbreviation <- NULL
                 municipality_code <- NULL
-               
-                if (!is.null(input$province_map_shape_click[['id']])){
-                        province_code <- input$province_map_shape_click[['id']]
-                        province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
-                        
-                }
                 
-                if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
-                        municipality_code = input$municipalities_map_shape_click[["id"]]
-                        if (!sameProvince(municipality_code, province_code)){
-                                municipality_code <- NULL
-                        }
-                        
-                }              
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+                
+                measure = input$measure
+                if (is.null(measure) || measure == ""){
+                  measure = 'Arrivi'
+                }else{
+                  measure = input$measure
+                }
+                print(paste("measure inside prov by nation: ", measure))
           ##################
-                provenience_by_nation <- get_provenience_by_nation(aggregate_movements, province_abbreviation, municipality_code)
+                provenience_by_nation <- get_provenience_by_nation(aggregate_movements, province_abbreviation, municipality_code, measure)
                 plot_title <- tr("distribuzione_per_stato", change$language)
-                y_axis_title <- tr("arrivi", change$language)
+                y_axis_title <- measure
                 
                 if (change$language == "en"){
                         provenience_by_nation$nazione <- translate_vector(provenience_by_nation$nazione, change$language)
+                        
                 }
                 
                 
@@ -433,7 +457,7 @@ shinyServer(function(input, output, session) {
                 
                 
                 
-                p <- plot_ly(data = provenience_by_nation, x = ~nazione, y = ~arrivi, type = 'bar') %>%
+                p <- plot_ly(data = provenience_by_nation, x = ~nazione, y = ~movimenti, type = 'bar') %>%
                         layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axis_title, tickfont = list(size = 9)), marker = list(color = 'rgb(158,202,225)',
                                 line = list(color = 'rgb(8,48,107)', width = 1.5)), margin = m) %>%
                         highlight(
@@ -446,9 +470,24 @@ shinyServer(function(input, output, session) {
         
         
         output$prov_by_region <- renderPlotly({
-                prov_by_region <- get_provenience_by_region(aggregate_movements)
+                province_abbreviation <- NULL
+                municipality_code <- NULL
+                
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+                
+                measure = input$measure
+                if (is.null(measure) || measure == ""){
+                  measure = 'Arrivi'
+                }else{
+                  measure = input$measure
+                }
+          
+                print(paste("measure inside prov by region: ", measure))
+                prov_by_region <- get_provenience_by_region(aggregate_movements, province_abbreviation, municipality_code, measure)
                 plot_title <- tr("distribuzione_per_regione", change$language)
-                y_axix_title <- tr("arrivi", change$language)
+                y_axix_title <- measure
                 
                 if (change$language == "en"){
                         prov_by_region$regione <- translate_vector(prov_by_region$regione, change$language)
@@ -459,30 +498,42 @@ shinyServer(function(input, output, session) {
                 xform <- list(categoryorder = "array",
                               categoryarray = prov_by_region$regione, title = "", tickfont = list(size = 9), tickangle = 35)
                 
-                p <- plot_ly(data = prov_by_region, x = ~regione, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                p <- plot_ly(data = prov_by_region, x = ~regione, y = ~movimenti, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axix_title, tickfont = list(size = 9)))
                 
         })
         
-        
-        
-        
-        
+
         
         output$sex <- renderPlotly({
-                sex_distribution <- get_sex(aggregate_web_data)
+                province_abbreviation <- NULL
+                municipality_code <- NULL
+                
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+                
+                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code)
                 
                 
                 plot_title <- tr("distribuzione_per_sesso", change$language)
-                p <- plot_ly(sex_distribution, labels = ~sesso, values = ~arrivi, type = 'pie', textinfo = 'percent', hoverinfo = 'text',
-                             text = ~paste(sesso, ":", arrivi), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE) %>%
+                p <- plot_ly(sex_distribution, labels = ~sesso, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'text',
+                             text = ~paste(sesso, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE) %>%
                         layout(title = plot_title, showlegend = T) 
                 
         })
         
         
         output$accomodated_type <- renderPlotly({
-                accomodated_type <- get_accomodated_type(aggregate_web_data)
+                province_abbreviation <- NULL
+                municipality_code <- NULL
+                
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+          
+          
+                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code)
                 if (change$language == "en"){
                         accomodated_type$tipo_alloggiato <- translate_vector(accomodated_type$tipo_alloggiato, change$language)
                 }
@@ -498,7 +549,17 @@ shinyServer(function(input, output, session) {
         
         
         output$age_range <- renderPlotly({
-                age_range <- get_age_range(aggregate_web_data)
+                province_abbreviation <- NULL
+                municipality_code <- NULL
+                
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+          
+          
+          
+          
+                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code)
                 plot_title <- tr("distribuzione_per_eta", change$language)
                 p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = ""))
@@ -506,28 +567,44 @@ shinyServer(function(input, output, session) {
         
         
         output$trend_comparison <- renderPlotly({
-                trends <- get_last_three_years(aggregate_movements)
+                province_abbreviation <- NULL
+                municipality_code <- NULL
+                
+                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                province_abbreviation <- selections[[1]]
+                municipality_code <- selections[[2]]
+                
+                measure = input$measure
+                if (is.null(measure) || measure == ""){
+                  measure = 'Arrivi'
+                }else{
+                  measure = input$measure
+                }
+
+                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure)
                 #trend_2014 = filter(trends, anno == 2014) %>% select(., c("mese"))
                 last_years <- tail(unique(trends$anno), n = 3)
                 
                 ### last three years 
                 trends1 <- trends[trends$anno == last_years[1], ]
-                mesi <- translate_vector(trends1$mese, change$language)
-                trends1$mese <- factor(x = mesi, levels = mesi)
+                mesi1 <- translate_vector(trends1$mese, change$language)
+                trends1$mese <- factor(x = mesi1, levels = mesi1)
                 
                 trends2 <- trends[trends$anno == last_years[2], ]
-                trends2$mese <- factor(x = mesi, levels = mesi)
+                mesi2 <- translate_vector(trends2$mese, change$language)
+                trends2$mese <- factor(x = mesi2, levels = mesi2)
                 
                 trends3 <- trends[trends$anno == last_years[3], ]
+                mesi3 <- translate_vector(trends3$mese, change$language) 
+                trends3$mese <- factor(x = mesi3, levels = mesi3)
+                #trends3$mese <- factor(x = mesi[1:nrow(trends3)], levels = mesi[1:nrow(trends3)])
                 
-                trends3$mese <- factor(x = mesi[1:nrow(trends3)], levels = mesi[1:nrow(trends3)])
-                
-                y_axix_title <- tr("arrivi", change$language)
+                y_axix_title <- measure
                 
                 plot_title <- tr("andamento_triennio", change$language)
-                p <- plot_ly(trends1, x = ~mese, y = ~arrivi, name = paste(y_axix_title, last_years[1]), type = 'scatter', mode = 'lines+markers') %>%
-                        add_trace(data = trends2, x = ~mese, y = ~arrivi, name = paste(y_axix_title, last_years[2]), mode = 'lines+markers') %>%
-                        add_trace(data = trends3, x = ~mese, y = ~arrivi, name = paste(y_axix_title, last_years[3]), mode = 'lines+markers') %>%                        
+                p <- plot_ly(trends1, x = ~mese, y = ~movimenti, name = paste(y_axix_title, last_years[1]), type = 'scatter', mode = 'lines+markers') %>%
+                        add_trace(data = trends2, x = ~mese, y = ~movimenti, name = paste(y_axix_title, last_years[2]), mode = 'lines+markers') %>%
+                        add_trace(data = trends3, x = ~mese, y = ~movimenti, name = paste(y_axix_title, last_years[3]), mode = 'lines+markers') %>%                        
                         layout(title = plot_title,
                                xaxis = list(title = ""),
                                yaxis = list (title = y_axix_title))        
