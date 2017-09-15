@@ -45,26 +45,20 @@ get_presences_by_municipal_code <- function(dataset){
 }
 
 
-get_last_three_years <- function(dataset){
+get_last_three_years <- function(dataset, province_abbreviation, municipality_code, measure){
+        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         mapping <- unique(cbind(dataset$mese, dataset$mesestr_ita))
         mapping_list <- mapping[,2]
         names(mapping_list) <- mapping[,1]
+        measure = tolower(measure)
         res <- aggregate(dataset$tot_arrivi ~ dataset$mese + dataset$anno_rif, FUN = sum)
-        names(res) <- c("mese", "anno", "arrivi")
+        if (!is.null(measure) || measure != "") {
+          if ((measure == 'presenze') || (measure == "presences")){
+            res <- aggregate(dataset$tot_presenze ~ dataset$mese + dataset$anno_rif, FUN = sum)
+          }
+        }
+        names(res) <- c("mese", "anno", "movimenti")
         
         out <- res %>% mutate(mese = mapping_list[mese])
-        # line_dataset = data.frame(matrix(nrow = 12, ncol = 4))
-        # line_dataset[,1] = c("Gennaio", "Febbraio", "Marzo")
-        # 
-        # last_years <- tail(unique(out$anno), n = 3)
-        # for (y in last_years){
-        #         arr = out[out$anno == y, 3]
-        #         
-        #         
-        #         
-        # }
-        # 
-        # months <- filter(res, anno == 2015) %>% select(., mese) %
-        
         out
 }
