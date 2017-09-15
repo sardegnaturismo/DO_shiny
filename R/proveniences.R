@@ -32,21 +32,34 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
         proveniences
 }
 
-get_provenience_by_nation <- function(dataset, province_abbreviation, municipality_code){
+get_provenience_by_nation <- function(dataset, province_abbreviation, municipality_code, measure){
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         foreigners <- dataset %>% filter(!grepl("^9", codicenazione))
         proveniences <- aggregate(foreigners$tot_arrivi ~ foreigners$descrizione, FUN = sum)
-        names(proveniences) <- c("nazione", "arrivi")
-        proveniences <- proveniences[order(proveniences$arrivi, decreasing = T), ]
+        measure = tolower(measure)
+        if (!is.null(measure) || measure != "") {
+          if ((measure == 'presenze') || (measure == "presences")){
+            proveniences <- aggregate(foreigners$tot_presenze ~ foreigners$descrizione, FUN = sum)
+          }
+        }
+        names(proveniences) = c("nazione", "movimenti")
+        proveniences <- proveniences[order(proveniences$movimenti, decreasing = T), ]
         
 
 }
 
-get_provenience_by_region <- function(dataset){
+get_provenience_by_region <- function(dataset, province_abbreviation, municipality_code, measure){
+        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)  
         italians_all <- dataset %>% filter(grepl("^9", codicenazione))
         italians <- italians_all %>% filter(!grepl("Italia", descrizione)) %>% filter(!grepl("Estero", descrizione))
         proveniences <- aggregate(italians$tot_arrivi ~ italians$descrizione, FUN = sum)
-        names(proveniences) = c("regione", "arrivi")
-        proveniences <- proveniences[order(proveniences$arrivi, decreasing = T), ]
+        measure = tolower(measure)
+        if (!is.null(measure) || measure != "") {
+          if ((measure == 'presenze') || (measure == "presences")){
+            proveniences <- aggregate(italians$tot_presenze ~ italians$descrizione, FUN = sum)
+          }
+        }
+        names(proveniences) = c("regione", "movimenti")
+        proveniences <- proveniences[order(proveniences$movimenti, decreasing = T), ]
         
 }
