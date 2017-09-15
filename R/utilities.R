@@ -1,5 +1,36 @@
 ### This function returns True if the municipality is included in province provided
 
+
+get_map_selections <- function(province_map_click_id, municipalities_map_click_id, sardinian_provinces){
+  print("*** map selections ***")
+  province_abbreviation <- NULL
+  municipality_code <- NULL
+  
+  if (!is.null(province_map_click_id)){
+    province_code <- province_map_click_id
+    province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
+    print(paste("Province abbreviation: ", province_abbreviation))
+    
+  }
+  
+  if(!(is.null(municipalities_map_click_id))){
+    municipality_code = municipalities_map_click_id
+    if (!sameProvince(municipality_code, province_code)){
+      print(paste("Municipality code", municipality_code))
+      municipality_code <- NULL
+      
+    }
+    
+  }
+  
+  # print(c(province_abbreviation, municipality_code))
+  print("***** end map selections ****")
+  # c(province_abbreviation, municipality_code)
+  return(list(province_abbreviation, municipality_code))
+  
+  
+}
+
 sameProvince <- function(municipality_code, province_code){
   return(substr(municipality_code, 1, nchar(province_code)) == province_code)
   
