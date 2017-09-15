@@ -1,12 +1,14 @@
 require(dplyr)
-get_sex <- function(dataset){
+get_sex <- function(dataset, province_abbreviation, municipality_code){
+        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         sex <- aggregate(dataset$tot_arrivi ~ dataset$sesso_str, FUN = sum)
-        names(sex) <- c("sesso", "arrivi")
+        names(sex) <- c("sesso", "movimenti")
         sex <- sex %>% filter(grepl("[F|M]", sesso))
 
 }
 
-get_accomodated_type <- function(dataset){
+get_accomodated_type <- function(dataset, province_abbreviation, municipality_code){
+        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         accomodated_type <- aggregate(dataset$tot_arrivi ~ dataset$tipoalloggiato_str, FUN = sum)
         names(accomodated_type) <- c("tipo_alloggiato", "arrivi")
         accomodated_type <- accomodated_type %>% filter(!(tipo_alloggiato == ''))
@@ -14,8 +16,8 @@ get_accomodated_type <- function(dataset){
  
 }
 
-get_age_range <- function(dataset){
-        
+get_age_range <- function(dataset, province_abbreviation, municipality_code){
+        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)        
         dd <- dataset  %>% 
                 filter(!(fasciaeta == "ND"))
         age_range <- aggregate(dd$tot_arrivi ~ dd$fasciaeta, FUN = sum)
