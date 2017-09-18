@@ -6,6 +6,7 @@
 #
 
 library(shiny)
+library(shinyjs)
 library(leaflet)
 library(plotly)
 library(crosstalk)
@@ -20,7 +21,7 @@ names(r_colors) <- colors()
 
 shinyUI(fluidPage(
    includeCSS("www/DO.css"),        
-                
+   useShinyjs(),                
         
   #Top header
   div(

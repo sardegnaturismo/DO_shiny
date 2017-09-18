@@ -6,6 +6,7 @@
 #
 
 library(shiny)
+library(shinyjs)
 library(leaflet)
 library(rgdal)
 library(plotly)
@@ -41,6 +42,7 @@ shinyServer(function(input, output, session) {
         ### reactive variables ###
         data <- reactiveValues(clickedProvince = NULL, clickedMunicipality = NULL)
         change <- reactiveValues(language = "it")
+        prov_pie <- reactiveValues(reset = FALSE)
         
         ##### Observers ###################
         observeEvent(input$province_map_shape_click,
@@ -83,6 +85,12 @@ shinyServer(function(input, output, session) {
         })
         observeEvent(input$en, {
                 change$language <- "en"
+        })
+        observeEvent(input$stop_provenience_filter, {
+                prov_pie$reset <- TRUE
+                show("prov_by_nation", anim = T, animType = "fade")
+                show("prov_by_region", anim = T, animType = "fade")
+                
         })
         
         #################################################
@@ -324,7 +332,7 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 # print("after the call of get_map_selection")
@@ -365,7 +373,19 @@ shinyServer(function(input, output, session) {
                 m <- list(
                         pad = 4
                 )
-                d <- event_data("plotly_click", source = 'prov_pie' )
+                
+                #prov_pie$clickedSlice <- event_data("plotly_click", source = 'prov_pie' )
+                if (prov_pie$reset){
+                        print("stop pie filter inside provenience")
+                        d = NULL
+                        #prov_pie$reset = FALSE
+                }else{
+                        d <- event_data("plotly_click", source = "prov_pie")
+                        print(paste("d assigned: ", d))
+                }
+
+                
+                
                 print("Click event")
                 print(d)
                 print(class(d))
@@ -376,8 +396,19 @@ shinyServer(function(input, output, session) {
                 }
                 plot_title <- tr("distribuzione_provenienza", change$language)
                 
+                
+                #### Color selection ####
+                colors <- c('rgb(255, 127, 14)', 'rgb(31, 119, 180)')
+                if (!is.null(d) && d[["pointNumber"]] == 0){ ##### Estero ####
+                        colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
+                }else if(!is.null(d) && d[["pointNumber"]] == 1){ #### Italia #####
+                        colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
+                }
+                
+                
+                
                 p <- plot_ly(proveniences, labels = ~provenienza, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'text',
-                             text = ~paste(provenienza, ":", movimenti), marker = list(line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE, source = 'prov_pie') %>%
+                             text = ~paste(provenienza, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE, source = 'prov_pie') %>%
                         layout(title = plot_title, showlegend = T) %>%
                         highlight(
                                   persistent = TRUE)
@@ -390,27 +421,31 @@ shinyServer(function(input, output, session) {
         # })
         
         output$prov_by_nation <- renderPlotly({
-                # province_abbreviation <- NULL
-                # municipality_code <- NULL
+                
+                ##### Italians/ Foreigners Filter ####
+                # if (prov_pie$reset){
+                #         print("stop pie filter inside prov_by_nation")
                 # 
-                # if (!is.null(input$province_map_shape_click[['id']])){
-                #         province_code <- input$province_map_shape_click[['id']]
-                #         province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
-                #         
+                #         d = NULL
+                #         #prov_pie$reset = FALSE
+                # }else{
+                #         d <- event_data("plotly_click", source = "prov_pie")
                 # }
-                # 
-                # if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
-                #         municipality_code = input$municipalities_map_shape_click[["id"]]
-                #         if (!sameProvince(municipality_code, province_code)){
-                #                 municipality_code <- NULL
-                #         }
-                #         
-                # }
-          
+                
+                d <- event_data("plotly_click", source = 'prov_pie' )
+                if (!is.null(d) && d[["pointNumber"]] == 1){
+                        hide("prov_by_nation", anim = T, animType = "fade")
+                        show("prov_by_region", anim = T, animType = "fade")
+                }else if (!is.null(d) && d[["pointNumber"]] == 0){
+                        hide("prov_by_region", anim = T, animType = "fade")
+                        show("prov_by_nation", anim = T, animType = "fade")
+                } 
+                
+
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
@@ -462,7 +497,7 @@ shinyServer(function(input, output, session) {
                                 line = list(color = 'rgb(8,48,107)', width = 1.5)), margin = m) %>%
                         highlight(
                                   persistent = TRUE,
-                                  dynamic = TRUE
+                              
                         )
                 
                                #yaxis = list(tickfont = list(size = 8)), xaxis = list(title = "Regione di provenienza", tickfont = list(size = 8)))
@@ -473,7 +508,7 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
@@ -509,7 +544,7 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
@@ -528,7 +563,7 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
           
@@ -552,7 +587,7 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
           
@@ -570,7 +605,7 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(input$province_map_shape_click[["id"]], input$municipalities_map_shape_click[["id"]], sardinian_provinces)
+                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
