@@ -111,10 +111,7 @@ shinyUI(fluidPage(
           column(
                   width = 4,
                   uiOutput("provenience_filter_button")
-                  
           )
-          
-          #tags$p("Seleziona la provenienza cliccando sugli elementi dei grafici")
   ), br(), br(),        
   fluidRow(
         column(
