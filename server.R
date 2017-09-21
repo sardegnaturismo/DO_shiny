@@ -14,6 +14,7 @@ library(data.table)
 library(dplyr)
 library(htmltools)
 library(crosstalk)
+library(V8)
 source("R/arrivals_presences.R")
 source("R/proveniences.R")
 source("R/profiling.R")
@@ -42,8 +43,10 @@ shinyServer(function(input, output, session) {
         ### reactive variables ###
         data <- reactiveValues(clickedProvince = NULL, clickedMunicipality = NULL)
         change <- reactiveValues(language = "it")
-        prov_pie <- reactiveValues(reset = FALSE)
-        
+        prov_pie <- reactiveValues(reset = FALSE, ev = NULL)
+        sex_pie <- reactiveValues(reset = FALSE, ev = NULL)
+        nation_bar <- reactiveValues(reset = FALSE, ev = NULL)
+        region_bar <- reactiveValues(reset = FALSE, ev = NULL)
         ##### Observers ###################
         observeEvent(input$province_map_shape_click,
                      {data$clickedProvince <- input$province_map_shape_click
@@ -86,12 +89,31 @@ shinyServer(function(input, output, session) {
         observeEvent(input$en, {
                 change$language <- "en"
         })
+        
+        observe({prov_pie$ev <- event_data("plotly_click", source = 'prov_pie')})
+        observe({sex_pie$ev <- event_data("plotly_click", source = "sex_pie" )})
+        observe({nation_bar$ev <- event_data("plotly_click", source = "nation_bar")
+               
+                })
+        observe({region_bar$ev <- event_data("plotly_click", source = "region_bar")
+                  
+                })        
+                 
         observeEvent(input$stop_provenience_filter, {
                 prov_pie$reset <- TRUE
+                prov_pie$ev <- NULL
+                nation_bar$ev <- NULL
+                region_bar$ev <- NULL
                 show("prov_by_nation", anim = T, animType = "fade")
                 show("prov_by_region", anim = T, animType = "fade")
-                
+
         })
+        observeEvent(input$stop_profiling_filter, {
+          sex_pie$reset <- TRUE
+          sex_pie$ev <- NULL
+        })
+
+        
         
         #################################################
         
@@ -374,15 +396,18 @@ shinyServer(function(input, output, session) {
                         pad = 4
                 )
                 
-                #prov_pie$clickedSlice <- event_data("plotly_click", source = 'prov_pie' )
-                if (prov_pie$reset){
-                        print("stop pie filter inside provenience")
-                        d = NULL
-                        #prov_pie$reset = FALSE
-                }else{
-                        d <- event_data("plotly_click", source = "prov_pie")
-                        print(paste("d assigned: ", d))
-                }
+                #d <- event_data("plotly_click", source = 'prov_pie' )
+                d <- prov_pie$ev
+                print(paste("d assigned: ", d))
+                # if (prov_pie$reset){
+                #         print("stop pie filter inside provenience")
+                #         d = NULL
+                #         prov_pie$reset = FALSE
+                # }else{
+                #         d <- event_data("plotly_click", source = 'prov_pie')
+                # 
+                #         print(paste("d assigned: ", d))
+                # }
 
                 
                 
@@ -421,18 +446,8 @@ shinyServer(function(input, output, session) {
         # })
         
         output$prov_by_nation <- renderPlotly({
-                
-                ##### Italians/ Foreigners Filter ####
-                # if (prov_pie$reset){
-                #         print("stop pie filter inside prov_by_nation")
-                # 
-                #         d = NULL
-                #         #prov_pie$reset = FALSE
-                # }else{
-                #         d <- event_data("plotly_click", source = "prov_pie")
-                # }
-                
-                d <- event_data("plotly_click", source = 'prov_pie' )
+
+                d <- prov_pie$ev
                 if (!is.null(d) && d[["pointNumber"]] == 1){
                         hide("prov_by_nation", anim = T, animType = "fade")
                         show("prov_by_region", anim = T, animType = "fade")
@@ -466,8 +481,7 @@ shinyServer(function(input, output, session) {
                         
                 }
                 
-                
-                #prov_by_nation$nazione = factor(x = prov_by_nation$nazione, levels = prov_by_nation$nazione)
+            
                 ### axis params ###
                 f2 <- list(
                   family = "Old Standard TT, serif",
@@ -490,13 +504,31 @@ shinyServer(function(input, output, session) {
                 xform <- list(categoryorder = "array",
                               categoryarray = provenience_by_nation$nazione, title = "", tickfont = list(size = 9), tickangle = 35)
                 
+                nation_ev <- nation_bar$ev
+                base_color = 'rgb(255, 127, 14)'
+                background_color = 'rgba(204,204,204,1)'
+                color_set = rep(base_color, nrow(provenience_by_nation))
+                if (!is.null(nation_ev)){
+                     if (!is.null(region_bar$ev)){
+                       region_bar$ev <- NULL
+                     }
+                     index <- as.numeric(nation_ev[["pointNumber"]]) + 1
+                     color_set = rep(background_color, nrow(provenience_by_nation))
+                     color_set[index] = base_color
+                    }
+
                 
+                #color1[1] = line_color
                 
-                p <- plot_ly(data = provenience_by_nation, x = ~nazione, y = ~movimenti, type = 'bar') %>%
-                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axis_title, tickfont = list(size = 9)), marker = list(color = 'rgb(158,202,225)',
-                                line = list(color = 'rgb(8,48,107)', width = 1.5)), margin = m) %>%
+                ######## Shared data to highlight ####
+                #prov_by_nation <- SharedData$new(provenience_by_nation, ~nazione)
+                
+                p <- plot_ly(data = provenience_by_nation, x = ~nazione, y = ~movimenti, type = 'bar', marker = list(color = color_set, line = list(color = 'rgb(255,140,0)', width = 1.5)), source = 'nation_bar') %>%
+                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axis_title, tickfont = list(size = 9)),
+                                margin = m) %>%
                         highlight(
                                   persistent = TRUE,
+                                  opacityDim = getOption("opacityDim", 0.1)
                               
                         )
                 
@@ -520,7 +552,27 @@ shinyServer(function(input, output, session) {
                 }
           
                 print(paste("measure inside prov by region: ", measure))
+
+                
+                
+                
                 prov_by_region <- get_provenience_by_region(aggregate_movements, province_abbreviation, municipality_code, measure)
+                
+                region_ev <- region_bar$ev
+                ### bar style ####
+                base_color = 'rgb(31, 119, 180)'
+                background_color = 'rgba(204,204,204,1)'
+                color_set = rep(base_color, nrow(prov_by_region))
+                if (!is.null(region_ev)){
+                  if (!is.null(nation_bar$ev)){
+                    nation_bar$ev <- NULL
+                  }
+                  index <- as.numeric(region_ev[["pointNumber"]]) + 1
+                  color_set = rep(background_color, nrow(prov_by_region))
+                  color_set[index] = base_color
+                }
+                
+                
                 plot_title <- tr("distribuzione_per_regione", change$language)
                 y_axix_title <- measure
                 
@@ -532,8 +584,8 @@ shinyServer(function(input, output, session) {
                 
                 xform <- list(categoryorder = "array",
                               categoryarray = prov_by_region$regione, title = "", tickfont = list(size = 9), tickangle = 35)
-                
-                p <- plot_ly(data = prov_by_region, x = ~regione, y = ~movimenti, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                ###cool color  marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)' 
+                p <- plot_ly(data = prov_by_region, x = ~regione, y = ~movimenti, type = 'bar', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = 'region_bar') %>%
                         layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axix_title, tickfont = list(size = 9)))
                 
         })
@@ -548,12 +600,30 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
-                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code)
+                ev <- prov_pie$ev
+                print(paste("sex event: ", ev[["pointNumber"]]))
+                
+                ### plotly event from nation bar chart
+                nation_ev <- nation_bar$ev
+                
+                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code, ev, nation_ev)
+                
+                
+                ### Color selection ####
+                d <- sex_pie$ev
+                print(paste("sex filter: ", d[["pointNumber"]]))
+                colors <- c('rgb(255, 127, 14)', 'rgb(31, 119, 180)')
+                if (!is.null(d) && d[["pointNumber"]] == 0){ ##### Female ####
+                  colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
+                }else if(!is.null(d) && d[["pointNumber"]] == 1){ #### Male #####
+                  colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
+                }
+                
                 
                 
                 plot_title <- tr("distribuzione_per_sesso", change$language)
                 p <- plot_ly(sex_distribution, labels = ~sesso, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'text',
-                             text = ~paste(sesso, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE) %>%
+                             text = ~paste(sesso, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE, source = 'sex_pie') %>%
                         layout(title = plot_title, showlegend = T) 
                 
         })
@@ -567,8 +637,14 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
           
-          
-                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code)
+                ev <- prov_pie$ev
+                print(paste("accomodated type provenience event: ", ev[["pointNumber"]]))
+                profile_ev <- sex_pie$ev
+                print(paste("accomodated type profile event: ", profile_ev["pointNumber"]))
+                ### plotly event from nation bar chart
+                nation_ev <- nation_bar$ev
+                
+                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev)
                 if (change$language == "en"){
                         accomodated_type$tipo_alloggiato <- translate_vector(accomodated_type$tipo_alloggiato, change$language)
                 }
@@ -592,9 +668,16 @@ shinyServer(function(input, output, session) {
                 municipality_code <- selections[[2]]
           
           
+                ev <- prov_pie$ev
+                print(paste("age range: ", ev[["pointNumber"]]))
+                profile_ev <- sex_pie$ev
+                print(paste("age range profile event: ", ev[["pointNumber"]]))
+                ### plotly event from nation bar chart
+                nation_ev <- nation_bar$ev
+                
+                
           
-          
-                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code)
+                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev)
                 plot_title <- tr("distribuzione_per_eta", change$language)
                 p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = ""))
@@ -615,8 +698,15 @@ shinyServer(function(input, output, session) {
                 }else{
                   measure = input$measure
                 }
-
-                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure)
+                
+                ### plotly event from provenience pie chart ####
+                ev <- prov_pie$ev
+                print(paste("Trend event: ", ev[["pointNumber"]]))
+                
+                ### plotly event from nation bar chart
+                nation_ev <- nation_bar$ev
+                
+                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev)
                 #trend_2014 = filter(trends, anno == 2014) %>% select(., c("mese"))
                 last_years <- tail(unique(trends$anno), n = 3)
                 
