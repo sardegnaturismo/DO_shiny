@@ -36,7 +36,7 @@ sameProvince <- function(municipality_code, province_code){
   
 }
 
-filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_code = NULL){
+filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_code = NULL, prov_pie_event = NULL, profile_pie_event = NULL, nation_bar_ev = NULL){
   if(!is.null(province_abbreviation)){
     dataset <-  filter(dataset, provincia == province_abbreviation)
     if (!is.null(municipality_code)){
@@ -47,6 +47,34 @@ filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_c
     }
     
   }
+  if(!is.null(prov_pie_event)){
+    target_field <- ifelse(names(dataset)[1] == "periodo", "codicenazione", "codiceluogo")
+    if (prov_pie_event[["pointNumber"]] == 0){
+      dataset <- dataset %>% filter(!grepl("^9", dataset[[target_field]]))
+      paste(paste("foreigners dataset", nrow(dataset)))
+    }else if (prov_pie_event[["pointNumber"]] == 1){
+      dataset <- dataset %>% filter(grepl("^9", dataset[[target_field]])) 
+      dataset <- dataset %>% filter(!grepl("^9999", dataset[[target_field]])) 
+    }
+  }
+  
+  if(names(dataset)[1] == "regione" && !is.null(profile_pie_event)){
+    if (profile_pie_event[["pointNumber"]] == 0){
+      paste("filtering females")
+      dataset <- dataset %>% filter(sesso_str == "F")
+    }else if (profile_pie_event[["pointNumber"]] == 1){
+      paste("filtering males")
+      dataset <- dataset %>% filter(sesso_str == "M")
+    }
+  }
+  
+  if(!is.null(nation_bar_ev)){
+    target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
+    dataset <- dataset %>% filter(dataset[[target_field2]] == nation_bar_ev[["x"]])
+    
+  }
+  
+  
   return(dataset)
 }
 
