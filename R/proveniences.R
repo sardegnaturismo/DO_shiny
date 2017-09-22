@@ -1,19 +1,11 @@
 get_global_proveniences <- function(dataset, province_abbreviation, municipality_code, measure){
-        # if(!is.null(province_abbreviation)){
-        #   dataset <-  filter(dataset, provincia == province_abbreviation)
-        #   if (!is.null(municipality_code)){
-        #     if (substring(municipality_code, 1, 1) == "9"){
-        #       municipality_code = paste("0", municipality_code, sep = '')
-        #       print("*** municipality code modified")
-        #       print(municipality_code)
-        #     }
-        #     dataset <- dataset %>% filter(codicecomune == municipality_code)
-        #   }
-        #   
-        # }
+  
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
-        italians <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("^9999", codicenazione)) %>% filter(anno_rif == 2016) 
-        foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(anno_rif == 2016)
+        # italians <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("^999", codicenazione)) %>% filter(periodo == "anno1") 
+        # foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(periodo == "anno1")
+
+        italians <- dataset %>% filter(grepl("^999$", codicenazione)) %>% filter(periodo == "anno1")
+        foreigners <- dataset %>% filter(grepl("9999", codicenazione)) %>% filter(periodo == "anno1")
         
         italians$descrizione = "Italia"
         foreigners$descrizione = "Estero"
@@ -34,7 +26,7 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
 
 get_provenience_by_nation <- function(dataset, province_abbreviation, municipality_code, measure){
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
-        foreigners <- dataset %>% filter(!grepl("^9", codicenazione))
+        foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(periodo == "anno1")
         proveniences <- aggregate(foreigners$tot_arrivi ~ foreigners$descrizione, FUN = sum)
         measure = tolower(measure)
         if (!is.null(measure) || measure != "") {
@@ -50,7 +42,7 @@ get_provenience_by_nation <- function(dataset, province_abbreviation, municipali
 
 get_provenience_by_region <- function(dataset, province_abbreviation, municipality_code, measure){
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)  
-        italians_all <- dataset %>% filter(grepl("^9", codicenazione))
+        italians_all <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(periodo == "anno1")
         italians <- italians_all %>% filter(!grepl("Italia", descrizione)) %>% filter(!grepl("Estero", descrizione))
         proveniences <- aggregate(italians$tot_arrivi ~ italians$descrizione, FUN = sum)
         measure = tolower(measure)

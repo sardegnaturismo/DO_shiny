@@ -357,29 +357,7 @@ shinyServer(function(input, output, session) {
                 selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
-                # print("after the call of get_map_selection")
-                # print(paste("selections: ", selections))
-                # # print(paste("province_abbreviation: ", province_abbreviation))
-                # print(paste(is.null(municipality_code)))
-          
-                # if (!is.null(input$province_map_shape_click[['id']])){
-                #   province_code <- input$province_map_shape_click[['id']]
-                #   province_abbreviation <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
-                #   print(paste("Province abbreviation: ", province_abbreviation))
-                #   
-                # }
-                # 
-                # if(!(is.null(input$municipalities_map_shape_click[["id"]]))){
-                #   municipality_code = input$municipalities_map_shape_click[["id"]]
-                #   if (!sameProvince(municipality_code, province_code)){
-                #     print(paste("Municipality code", municipality_code))
-                #     municipality_code <- NULL
-                #     
-                #   }
-                #   
-                # }
-                
-                     
+
                 measure = input$measure
                 if (is.null(measure) || measure == ""){
                         measure = 'Arrivi'
