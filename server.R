@@ -603,10 +603,11 @@ shinyServer(function(input, output, session) {
                 ev <- prov_pie$ev
                 print(paste("sex event: ", ev[["pointNumber"]]))
                 
-                ### plotly event from nation bar chart
+                ### plotly events from nations and regions bar chart
                 nation_ev <- nation_bar$ev
+                region_ev <- region_bar$ev
                 
-                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code, ev, nation_ev)
+                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code, ev, nation_ev, region_ev)
                 
                 
                 ### Color selection ####
@@ -641,10 +642,11 @@ shinyServer(function(input, output, session) {
                 print(paste("accomodated type provenience event: ", ev[["pointNumber"]]))
                 profile_ev <- sex_pie$ev
                 print(paste("accomodated type profile event: ", profile_ev["pointNumber"]))
-                ### plotly event from nation bar chart
+                ### plotly events from nations and regions bar chart
                 nation_ev <- nation_bar$ev
+                region_ev <- region_bar$ev
                 
-                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev)
+                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev)
                 if (change$language == "en"){
                         accomodated_type$tipo_alloggiato <- translate_vector(accomodated_type$tipo_alloggiato, change$language)
                 }
@@ -672,12 +674,13 @@ shinyServer(function(input, output, session) {
                 print(paste("age range: ", ev[["pointNumber"]]))
                 profile_ev <- sex_pie$ev
                 print(paste("age range profile event: ", ev[["pointNumber"]]))
-                ### plotly event from nation bar chart
+                ### plotly events from nations and regions bar chart
                 nation_ev <- nation_bar$ev
+                region_ev <- region_bar$ev
                 
                 
           
-                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev)
+                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev)
                 plot_title <- tr("distribuzione_per_eta", change$language)
                 p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = ""))
@@ -703,10 +706,11 @@ shinyServer(function(input, output, session) {
                 ev <- prov_pie$ev
                 print(paste("Trend event: ", ev[["pointNumber"]]))
                 
-                ### plotly event from nation bar chart
+                ### plotly events from nations and regions bar chart
                 nation_ev <- nation_bar$ev
+                region_ev <- region_bar$ev
                 
-                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev)
+                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev, region_ev)
                 #trend_2014 = filter(trends, anno == 2014) %>% select(., c("mese"))
                 last_years <- tail(unique(trends$anno), n = 3)
                 
