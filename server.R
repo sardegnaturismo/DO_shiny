@@ -47,6 +47,8 @@ shinyServer(function(input, output, session) {
         sex_pie <- reactiveValues(reset = FALSE, ev = NULL)
         nation_bar <- reactiveValues(reset = FALSE, ev = NULL)
         region_bar <- reactiveValues(reset = FALSE, ev = NULL)
+        accomodated_bar <- reactiveValues(ev = NULL)
+        age_bar <- reactiveValues(ev = NULL)
         ##### Observers ###################
         observeEvent(input$province_map_shape_click,
                      {data$clickedProvince <- input$province_map_shape_click
@@ -92,25 +94,28 @@ shinyServer(function(input, output, session) {
         
         observe({prov_pie$ev <- event_data("plotly_click", source = 'prov_pie')})
         observe({sex_pie$ev <- event_data("plotly_click", source = "sex_pie" )})
-        observe({nation_bar$ev <- event_data("plotly_click", source = "nation_bar")
-               
-                })
-        observe({region_bar$ev <- event_data("plotly_click", source = "region_bar")
-                  
-                })        
+        observe({nation_bar$ev <- event_data("plotly_click", source = "nation_bar")})
+        observe({region_bar$ev <- event_data("plotly_click", source = "region_bar")})
+        observe({accomodated_bar$ev <- event_data("plotly_click", source = "accomodated_bar")})
+        observe({age_bar$ev <- event_data("plotly_click", source = "age_bar")})
                  
         observeEvent(input$stop_provenience_filter, {
                 prov_pie$reset <- TRUE
                 prov_pie$ev <- NULL
                 nation_bar$ev <- NULL
                 region_bar$ev <- NULL
-                show("prov_by_nation", anim = T, animType = "fade")
-                show("prov_by_region", anim = T, animType = "fade")
+                shinyjs::show("prov_by_nation", anim = TRUE, animType = "fade")
+                shinyjs::show("prov_by_region", anim = TRUE, animType = "fade")
 
         })
         observeEvent(input$stop_profiling_filter, {
           sex_pie$reset <- TRUE
           sex_pie$ev <- NULL
+
+        })
+        observeEvent(input$stop_accomodated_type_filter, {
+           accomodated_bar$ev <- NULL
+           age_bar$ev <- NULL                
         })
 
         
@@ -403,8 +408,10 @@ shinyServer(function(input, output, session) {
                 #### Color selection ####
                 colors <- c('rgb(255, 127, 14)', 'rgb(31, 119, 180)')
                 if (!is.null(d) && d[["pointNumber"]] == 0){ ##### Estero ####
+                        region_bar$ev <- NULL
                         colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
                 }else if(!is.null(d) && d[["pointNumber"]] == 1){ #### Italia #####
+                        nation_bar$ev <- NULL
                         colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
                 }
                 
@@ -427,11 +434,11 @@ shinyServer(function(input, output, session) {
 
                 d <- prov_pie$ev
                 if (!is.null(d) && d[["pointNumber"]] == 1){
-                        hide("prov_by_nation", anim = T, animType = "fade")
-                        show("prov_by_region", anim = T, animType = "fade")
+                        shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
+                        shinyjs::show("prov_by_region", anim = T, animType = "fade")
                 }else if (!is.null(d) && d[["pointNumber"]] == 0){
-                        hide("prov_by_region", anim = T, animType = "fade")
-                        show("prov_by_nation", anim = T, animType = "fade")
+                        shinyjs::hide("prov_by_region", anim = T, animType = "fade")
+                        shinyjs::show("prov_by_nation", anim = T, animType = "fade")
                 } 
                 
 
@@ -630,10 +637,27 @@ shinyServer(function(input, output, session) {
                 }
                 
                 
+                accomodated_ev <- accomodated_bar$ev
+                base_color = 'rgb(158,202,225)'
+                background_color = 'rgba(204,204,204,1)'
+                color_set = rep(base_color, nrow(accomodated_type))
+                if (!is.null(accomodated_ev)){
+                        accomodated_type_chosen = accomodated_ev[["x"]]
+                        print(paste("accomodated_type: ", accomodated_type_chosen))
+                        index <- as.numeric(accomodated_ev$pointNumber[accomodated_ev$x == accomodated_type_chosen]) + 1
+                        print(paste("index: ", index))
+                        #index <- as.numeric(accomodated_ev[["pointNumber"]]) + 1
+                        color_set = rep(background_color, nrow(accomodated_type))
+                        color_set[index] = base_color
+                }
+
+                
+                
+                
                 xform <- list(categoryorder = "array",
                               categoryarray = accomodated_type$tipo_alloggiato, title = "")
                 plot_title <- tr("distribuzione_per_alloggiato", change$language)
-                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
                         layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = ""))                
                 
         })
@@ -655,10 +679,12 @@ shinyServer(function(input, output, session) {
                 ### plotly events from nations and regions bar chart
                 nation_ev <- nation_bar$ev
                 region_ev <- region_bar$ev
-                
+                accomodated_ev <- accomodated_bar$ev
+                print("Accomodated type event:")
+                print(accomodated_ev)
                 
           
-                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev)
+                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, accomodated_ev)
                 plot_title <- tr("distribuzione_per_eta", change$language)
                 p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = ""))
@@ -693,25 +719,43 @@ shinyServer(function(input, output, session) {
                 last_years <- tail(unique(trends$anno), n = 3)
                 
                 ### last three years 
-                trends1 <- trends[trends$anno == last_years[1], ]
+                # trends1 <- trends[trends$anno == last_years[1], ]
+                # mesi1 <- translate_vector(trends1$mese, change$language)
+                # trends1$mese <- factor(x = mesi1, levels = mesi1)
+                # 
+                # trends2 <- trends[trends$anno == last_years[2], ]
+                # mesi2 <- translate_vector(trends2$mese, change$language)
+                # trends2$mese <- factor(x = mesi2, levels = mesi2)
+                # 
+                # trends3 <- trends[trends$anno == last_years[3], ]
+                # mesi3 <- translate_vector(trends3$mese, change$language) 
+                # trends3$mese <- factor(x = mesi3, levels = mesi3)
+               ##############################################
+                trends1 <- filter(trends, periodo == "anno1") ### last year
                 mesi1 <- translate_vector(trends1$mese, change$language)
-                trends1$mese <- factor(x = mesi1, levels = mesi1)
+                m <- factor(mesi1, levels = mesi1)
+                intervallo1 <- trends1$intervallo[1]
                 
-                trends2 <- trends[trends$anno == last_years[2], ]
-                mesi2 <- translate_vector(trends2$mese, change$language)
-                trends2$mese <- factor(x = mesi2, levels = mesi2)
+                trends2 <- filter(trends, periodo == "anno2")
+                mesi2 <- translate_vector(trends2$mese, change$language) #past years
+                intervallo2 <- trends2$intervallo[1]
                 
-                trends3 <- trends[trends$anno == last_years[3], ]
-                mesi3 <- translate_vector(trends3$mese, change$language) 
-                trends3$mese <- factor(x = mesi3, levels = mesi3)
-                #trends3$mese <- factor(x = mesi[1:nrow(trends3)], levels = mesi[1:nrow(trends3)])
+                trends3 <- filter(trends, periodo == "anno3")
+                mesi3 <- translate_vector(trends3$mese, change$language) ### past years
+                intervallo3 <- trends3$intervallo[1]
                 
+                print(mesi1)
+                ### Layout params              
                 y_axix_title <- measure
+                xform <- list(categoryorder = "array", categoryarray = mesi1, title = "", showticklabels = TRUE)
+                
+                
+                
                 
                 plot_title <- tr("andamento_triennio", change$language)
-                p <- plot_ly(trends1, x = ~mese, y = ~movimenti, name = paste(y_axix_title, last_years[1]), type = 'scatter', mode = 'lines+markers') %>%
-                        add_trace(data = trends2, x = ~mese, y = ~movimenti, name = paste(y_axix_title, last_years[2]), mode = 'lines+markers') %>%
-                        add_trace(data = trends3, x = ~mese, y = ~movimenti, name = paste(y_axix_title, last_years[3]), mode = 'lines+markers') %>%                        
+                p <- plot_ly(trends1, x = ~m, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers') %>%
+                        add_trace(data = trends2, x = ~m, y = ~movimenti, name = paste(y_axix_title, intervallo2), mode = 'lines+markers') %>%
+                        add_trace(data = trends3, x = ~m, y = ~movimenti, name = paste(y_axix_title, intervallo3), mode = 'lines+markers') %>%                        
                         layout(title = plot_title,
                                xaxis = list(title = ""),
                                yaxis = list (title = y_axix_title))        

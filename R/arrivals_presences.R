@@ -1,6 +1,6 @@
 get_arrivals <- function(dataset){
-        ### 2016 Arrivals
-        data <- dataset[dataset$anno_rif == 2016, ]
+        ### Arrival number in the last 12 months
+        data <- dataset[dataset$periodo == "anno1", ]
         arrivals <- aggregate(data$tot_arrivi ~ data$provincia, FUN = sum)
         names(arrivals) <- c("province", "tot_arrivals")
         res <- arrivals[order(arrivals$tot_arrivals, decreasing = T), ]
@@ -9,8 +9,8 @@ get_arrivals <- function(dataset){
 }
 
 get_arrivals_by_municipal_code <- function(dataset){
-        ####2016 arrivals###
-        data <- dataset[dataset$anno_rif == 2016, ]
+        #### Arrival number by municipal code in the last 12 months
+        data <- dataset[dataset$periodo == "anno1", ]
         arrivals <- aggregate(data$tot_arrivi ~ data$codicecomune, FUN = sum)
         names(arrivals) <- c("municipal_code", "tot_arrivals")
         arrivals = arrivals[arrivals$municipal_code != "", ]
@@ -21,8 +21,8 @@ get_arrivals_by_municipal_code <- function(dataset){
 }
 
 get_presences <- function(dataset){
-        ### 2016 Arrivals
-        data <- dataset[dataset$anno_rif == 2016, ]
+        ### Presences in  the last 12 months
+        data <- dataset[dataset$periodo == "anno1",  ]
         presences <- aggregate(data$tot_presenze ~ data$provincia, FUN = sum)
         names(presences) <- c("province", "tot_presences")
         res <- presences[order(presences$tot_presences, decreasing = T), ]
@@ -32,8 +32,8 @@ get_presences <- function(dataset){
 
 
 get_presences_by_municipal_code <- function(dataset){
-        #### 2016####
-        data <- dataset[dataset$anno_rif == 2016, ]
+        #### Presences by municipal code in the last 12 months
+        data <- dataset[dataset$periodo == "anno1",  ]
         presences <- aggregate(data$tot_presenze ~ data$codicecomune, FUN = sum)
         names(presences) <- c("municipal_code", "tot_presences")
         presences = presences[presences$municipal_code != "", ]
@@ -51,13 +51,14 @@ get_last_three_years <- function(dataset, province_abbreviation, municipality_co
         mapping_list <- mapping[,2]
         names(mapping_list) <- mapping[,1]
         measure = tolower(measure)
-        res <- aggregate(dataset$tot_arrivi ~ dataset$mese + dataset$anno_rif, FUN = sum)
+        # res <- aggregate(dataset$tot_arrivi ~ dataset$mese + dataset$anno_rif, FUN = sum)
+        res <- aggregate(dataset$tot_arrivi ~ dataset$periodo + dataset$mese + dataset$anno_rif + dataset$periodo_str, FUN = sum)
         if (!is.null(measure) || measure != "") {
           if ((measure == 'presenze') || (measure == "presences")){
             res <- aggregate(dataset$tot_presenze ~ dataset$mese + dataset$anno_rif, FUN = sum)
           }
         }
-        names(res) <- c("mese", "anno", "movimenti")
+        names(res) <- c("periodo", "mese", "anno", "intervallo", "movimenti")
         
         out <- res %>% mutate(mese = mapping_list[mese])
         out

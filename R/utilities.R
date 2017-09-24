@@ -36,7 +36,7 @@ sameProvince <- function(municipality_code, province_code){
   
 }
 
-filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_code = NULL, prov_pie_event = NULL, profile_pie_event = NULL, nation_bar_ev = NULL, region_bar_ev = NULL){
+filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_code = NULL, prov_pie_event = NULL, profile_pie_event = NULL, nation_bar_ev = NULL, region_bar_ev = NULL, accomodated_bar_ev = NULL){
   if(!is.null(province_abbreviation)){
     dataset <-  filter(dataset, provincia == province_abbreviation)
     if (!is.null(municipality_code)){
@@ -77,7 +77,12 @@ filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_c
     target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
     dataset <- dataset %>% filter(dataset[[target_field3]] == region_bar_ev[["x"]])    
   }
-  
+        
+  if(!is.null(accomodated_bar_ev)){
+          if(names(dataset)[1] == "regione"){
+                  dataset <- dataset %>% filter(dataset[["tipoalloggiato_str"]] == accomodated_bar_ev[["x"]])
+          }
+  }  
   
   return(dataset)
 }

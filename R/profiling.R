@@ -16,8 +16,8 @@ get_accomodated_type <- function(dataset, province_abbreviation, municipality_co
  
 }
 
-get_age_range <- function(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev){
-        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev)        
+get_age_range <- function(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev, accomodated_bar_ev){
+        dataset <- filter_dataset(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev, accomodated_bar_ev)        
         dd <- dataset  %>% 
                 filter(!(fasciaeta == "ND"))
         age_range <- aggregate(dd$tot_arrivi ~ dd$fasciaeta, FUN = sum)
