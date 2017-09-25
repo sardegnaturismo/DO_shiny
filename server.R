@@ -643,19 +643,15 @@ shinyServer(function(input, output, session) {
                 color_set = rep(base_color, nrow(accomodated_type))
                 if (!is.null(accomodated_ev)){
                         accomodated_type_chosen = accomodated_ev[["x"]]
-                        print(paste("accomodated_type: ", accomodated_type_chosen))
-                        index <- as.numeric(accomodated_ev$pointNumber[accomodated_ev$x == accomodated_type_chosen]) + 1
-                        print(paste("index: ", index))
-                        #index <- as.numeric(accomodated_ev[["pointNumber"]]) + 1
                         color_set = rep(background_color, nrow(accomodated_type))
-                        color_set[index] = base_color
+                        names(color_set) = accomodated_type$tipo_alloggiato
+                        color_set[accomodated_type_chosen] = base_color
                 }
 
-                
-                
-                
+                #c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo")
+                #accomodated_type$tipo_alloggiato
                 xform <- list(categoryorder = "array",
-                              categoryarray = accomodated_type$tipo_alloggiato, title = "")
+                              categoryarray = c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo"), title = "")
                 plot_title <- tr("distribuzione_per_alloggiato", change$language)
                 p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
                         layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = ""))                
