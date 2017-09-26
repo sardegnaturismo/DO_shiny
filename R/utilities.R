@@ -36,7 +36,7 @@ sameProvince <- function(municipality_code, province_code){
   
 }
 
-filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_code = NULL, prov_pie_event = NULL, profile_pie_event = NULL, nation_bar_ev = NULL, region_bar_ev = NULL, accomodated_bar_ev = NULL){
+filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_code = NULL, prov_pie_event = NULL, profile_pie_event = NULL, nation_bar_ev = NULL, region_bar_ev = NULL, accomodated_bar_ev = NULL, lang_chosen = NULL){
   if(!is.null(province_abbreviation)){
     dataset <-  filter(dataset, provincia == province_abbreviation)
     if (!is.null(municipality_code)){
@@ -69,18 +69,41 @@ filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_c
   }
   
   if(!is.null(nation_bar_ev)){
-    target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
+    print("*** inside filter dataset ***")
+    print(paste("lang chosen: ", lang_chosen))
+    if(lang_chosen == "en"){
+      target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
+    }else{
+      target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")          
+    }
+    print(paste("target field 2:", target_field2))
     dataset <- dataset %>% filter(dataset[[target_field2]] == nation_bar_ev[["x"]])
     
   }
   if (!is.null(region_bar_ev)){
-    target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
+    if(lang_chosen == "en"){
+      target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
+    }else{
+      target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
+    }
+    print(paste("target field 3:", target_field3))
     dataset <- dataset %>% filter(dataset[[target_field3]] == region_bar_ev[["x"]])    
   }
         
   if(!is.null(accomodated_bar_ev)){
+          accomodated_type_chosen = accomodated_bar_ev[["x"]]
+          print(paste("PRE accomodated type chosen: ", accomodated_type_chosen))
+          if (lang_chosen == "en"){
+            tipo_alloggiato = unique(dataset$tipoalloggiato_str)
+            print("tipo alloggiato:")
+            print(tipo_alloggiato)
+            accomodated_type = translate_vector(tipo_alloggiato, lang_chosen)
+            index = which(accomodated_type == accomodated_type_chosen)
+            accomodated_type_chosen = tipo_alloggiato[index]
+          }
+          print(paste("POST accomodated_type_chosen: ", accomodated_type_chosen))
           if(names(dataset)[1] == "regione"){
-                  dataset <- dataset %>% filter(dataset[["tipoalloggiato_str"]] == accomodated_bar_ev[["x"]])
+                  dataset <- dataset %>% filter(dataset[["tipoalloggiato_str"]] == accomodated_type_chosen)
           }
   }  
   
@@ -104,6 +127,11 @@ build_marker_popup <- function(denominazione, tipologia, classificazione, mesi_a
     p = paste("<p>", pop_up, "</p>")
 }
 
+
+get_longest_vector <- function(l){
+  ordered_list <- l[order(lengths(l), decreasing = T)]
+  return(ordered_list[[1]])
+}
 
 get_language <- function(language = "it"){
         language
