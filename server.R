@@ -87,9 +87,20 @@ shinyServer(function(input, output, session) {
                       data$clickedMunicipality <- NULL})
         observeEvent(input$it, {
                 change$language <- "it"
+                # nations <- aggregate_movements$descrizione
+                # regions <- aggregate_web_data$descrizioneluogo
+                # aggregate_movements$descrizione <- translate_vector(nations, change$language)
+                # aggregate_web_data$descrizioneluogo <- translate_vector(regions, change$language)
+                
+                
         })
         observeEvent(input$en, {
                 change$language <- "en"
+                # nations <- aggregate_movements$descrizione
+                # regions <- aggregate_web_data$descrizioneluogo
+                # aggregate_movements$descrizione <- translate_vector(nations, change$language)
+                # aggregate_web_data$descrizioneluogo <- translate_vector(regions, change$language)
+                
         })
         
         observe({prov_pie$ev <- event_data("plotly_click", source = 'prov_pie')})
@@ -461,10 +472,6 @@ shinyServer(function(input, output, session) {
                 plot_title <- tr("distribuzione_per_stato", change$language)
                 y_axis_title <- measure
                 
-                if (change$language == "en"){
-                        provenience_by_nation$nazione <- translate_vector(provenience_by_nation$nazione, change$language)
-                        
-                }
                 
             
                 ### axis params ###
@@ -485,7 +492,10 @@ shinyServer(function(input, output, session) {
                 
                 
                 ###################
-                
+               if (change$language == "en"){
+                 provenience_by_nation$nazione <- translate_vector(provenience_by_nation$nazione, change$language)
+                 
+               }
                 xform <- list(categoryorder = "array",
                               categoryarray = provenience_by_nation$nazione, title = "", tickfont = list(size = 9), tickangle = 35)
                 
@@ -497,9 +507,11 @@ shinyServer(function(input, output, session) {
                      if (!is.null(region_bar$ev)){
                        region_bar$ev <- NULL
                      }
-                     index <- as.numeric(nation_ev[["pointNumber"]]) + 1
+                     nation_chosen <- nation_ev[["x"]]
+                     #index <- as.numeric(nation_ev[["pointNumber"]]) + 1
                      color_set = rep(background_color, nrow(provenience_by_nation))
-                     color_set[index] = base_color
+                     names(color_set) = provenience_by_nation$nazione
+                     color_set[nation_chosen] = base_color
                     }
 
                 
@@ -539,9 +551,19 @@ shinyServer(function(input, output, session) {
                 print(paste("measure inside prov by region: ", measure))
 
                 
+
+                
+                # if (change$language == "en"){
+                #   regions <- aggregate_movements$descrizione
+                #   aggregate_movements$descrizione <- translate_vector(regions, change$language)
+                # }
                 
                 
                 prov_by_region <- get_provenience_by_region(aggregate_movements, province_abbreviation, municipality_code, measure)
+                
+                if (change$language == "en"){
+                  prov_by_region$regione <- translate_vector(prov_by_region$regione, change$language)
+                }
                 
                 region_ev <- region_bar$ev
                 ### bar style ####
@@ -552,18 +574,17 @@ shinyServer(function(input, output, session) {
                   if (!is.null(nation_bar$ev)){
                     nation_bar$ev <- NULL
                   }
-                  index <- as.numeric(region_ev[["pointNumber"]]) + 1
+                  region_chosen <- region_ev[["x"]]
+                  #index <- as.numeric(region_ev[["pointNumber"]]) + 1
                   color_set = rep(background_color, nrow(prov_by_region))
-                  color_set[index] = base_color
+                  names(color_set) <- prov_by_region$regione
+                  color_set[region_chosen] = base_color
                 }
                 
                 
                 plot_title <- tr("distribuzione_per_regione", change$language)
                 y_axix_title <- measure
-                
-                if (change$language == "en"){
-                        prov_by_region$regione <- translate_vector(prov_by_region$regione, change$language)
-                }
+
                 
                 
                 
@@ -592,7 +613,7 @@ shinyServer(function(input, output, session) {
                 nation_ev <- nation_bar$ev
                 region_ev <- region_bar$ev
                 
-                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code, ev, nation_ev, region_ev)
+                sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code, ev, nation_ev, region_ev, change$language)
                 
                 
                 ### Color selection ####
@@ -631,7 +652,7 @@ shinyServer(function(input, output, session) {
                 nation_ev <- nation_bar$ev
                 region_ev <- region_bar$ev
                 
-                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev)
+                accomodated_type <- get_accomodated_type(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, change$language)
                 if (change$language == "en"){
                         accomodated_type$tipo_alloggiato <- translate_vector(accomodated_type$tipo_alloggiato, change$language)
                 }
@@ -680,7 +701,7 @@ shinyServer(function(input, output, session) {
                 print(accomodated_ev)
                 
           
-                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, accomodated_ev)
+                age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, accomodated_ev, change$language)
                 plot_title <- tr("distribuzione_per_eta", change$language)
                 p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = ""))
@@ -710,7 +731,8 @@ shinyServer(function(input, output, session) {
                 nation_ev <- nation_bar$ev
                 region_ev <- region_bar$ev
                 
-                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev, region_ev)
+                trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev, region_ev, change$language)
+                print(trends)
                 #trend_2014 = filter(trends, anno == 2014) %>% select(., c("mese"))
                 last_years <- tail(unique(trends$anno), n = 3)
                 
@@ -729,31 +751,37 @@ shinyServer(function(input, output, session) {
                ##############################################
                 trends1 <- filter(trends, periodo == "anno1") ### last year
                 mesi1 <- translate_vector(trends1$mese, change$language)
-                m <- factor(mesi1, levels = mesi1)
+                m1 <- factor(mesi1, levels = mesi1)
                 intervallo1 <- trends1$intervallo[1]
                 
                 trends2 <- filter(trends, periodo == "anno2")
                 mesi2 <- translate_vector(trends2$mese, change$language) #past years
+                m2 <- factor(mesi2, levels = mesi2)
                 intervallo2 <- trends2$intervallo[1]
                 
                 trends3 <- filter(trends, periodo == "anno3")
                 mesi3 <- translate_vector(trends3$mese, change$language) ### past years
+                m3 <- factor(mesi3, levels = mesi3)
                 intervallo3 <- trends3$intervallo[1]
                 
-                print(mesi1)
+                month_list <- list(m1, m2, m3)
+                reference_month_list <- get_longest_vector(month_list)
+                
+                print(paste("Lunghezza mesi: ", length(reference_month_list)))
+                print(m)
                 ### Layout params              
                 y_axix_title <- measure
-                xform <- list(categoryorder = "array", categoryarray = mesi1, title = "", showticklabels = TRUE)
+                xform <- list(categoryorder = "array", categoryarray = reference_month_list, title = "", showticklabels = TRUE)
                 
                 
                 
                 
                 plot_title <- tr("andamento_triennio", change$language)
-                p <- plot_ly(trends1, x = ~m, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers') %>%
-                        add_trace(data = trends2, x = ~m, y = ~movimenti, name = paste(y_axix_title, intervallo2), mode = 'lines+markers') %>%
-                        add_trace(data = trends3, x = ~m, y = ~movimenti, name = paste(y_axix_title, intervallo3), mode = 'lines+markers') %>%                        
+                p <- plot_ly(trends1, x = ~m1, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers') %>%
+                        add_trace(data = trends2, x = ~m2, y = ~movimenti, name = paste(y_axix_title, intervallo2), mode = 'lines+markers') %>%
+                        add_trace(data = trends3, x = ~m3, y = ~movimenti, name = paste(y_axix_title, intervallo3), mode = 'lines+markers') %>%                        
                         layout(title = plot_title,
-                               xaxis = list(title = ""),
+                               xaxis = xform,
                                yaxis = list (title = y_axix_title))        
         })
         
