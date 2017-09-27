@@ -56,9 +56,12 @@ get_last_three_years <- function(dataset, province_abbreviation, municipality_co
         res <- aggregate(dataset$tot_arrivi ~ dataset$periodo + dataset$mese + dataset$anno_rif + dataset$periodo_str, FUN = sum)
         if (!is.null(measure) || measure != "") {
           if ((measure == 'presenze') || (measure == "presences")){
-            res <- aggregate(dataset$tot_presenze ~ dataset$mese + dataset$anno_rif, FUN = sum)
+            res <- aggregate(dataset$tot_presenze ~ dataset$periodo + dataset$mese + dataset$anno_rif + dataset$periodo_str, FUN = sum)
+            #res <- aggregate(dataset$tot_presenze ~ dataset$mese + dataset$anno_rif, FUN = sum)
           }
         }
+        print("names length: ", length(names(res)))
+        print(res)
         names(res) <- c("periodo", "mese", "anno", "intervallo", "movimenti")
         
         out <- res %>% mutate(mese = mapping_list[mese])

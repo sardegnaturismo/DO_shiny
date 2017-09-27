@@ -29,7 +29,7 @@ sardinian_provinces <- subset(provinces, provinces$PROVINCIA %in% c("Sassari", "
                                                                     "Medio Campidano", "Carbonia-Iglesias"))
 municipalities <- readOGR("shapes/Com2016_rprj.shp")
 aggregate_movements <- fread("data/agg_ope_line_20xx.csv")
-aggregate_web_data <- fread("data/agg_ope_web.csv")
+aggregate_web_data <- fread("data/agg_ope_web.csv", encoding = "UTF-8")
 map_threshold <- fread("data/soglia_map_prov_com_ope.csv")
 structures <- fread("data/struttura_info_ope.csv")
 
