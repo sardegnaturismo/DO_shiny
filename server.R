@@ -49,38 +49,88 @@ shinyServer(function(input, output, session) {
         region_bar <- reactiveValues(reset = FALSE, ev = NULL)
         accomodated_bar <- reactiveValues(ev = NULL)
         age_bar <- reactiveValues(ev = NULL)
+        province_map_clicked <- reactiveValues(selected = NULL)
+        municipality_map_clicked <- reactiveValues(selected = NULL)
         ##### Observers ###################
         observeEvent(input$province_map_shape_click,
                      {data$clickedProvince <- input$province_map_shape_click
+                      
                      ####### highlight selection ####
                      #define leaflet proxy for second regional level map
-                     # click <-input$province_map_shape_click
-                     # proxy <- leafletProxy("province_map")
-                     # #province_ids <- sapply(1:8, function(x) sardinian_provinces@polygons[[x]]@ID)
-                     # selected_province <- sardinian_provinces[sardinian_provinces$COD_PRO == click$id, ]
-                     # print("**selected province ***")
-                     # print(selected_province)
-                     # 
-                     # #map clicked on polygons
-                     # proxy %>% addPolygons(data = selected_province,
-                     #                       fillColor = "red",
-                     #                       fillOpacity = 1,
-                     #                       weight = 1,
-                     #                       color = "black",
-                     #                       stroke = T,
-                     #                       layerId = "selected")
-                     # 
-                     # #remove polygon group that are clicked twice
-                     # if(click$group == "selected"){
-                     #         proxy %>%
-                     #                 clearGroup(group = "selected")
-                     # } #END CONDITIONAL
-                           
-                                          
+                       click <-input$province_map_shape_click
+                       proxy <- leafletProxy("province_map")
+                       selected_province <- sardinian_provinces[sardinian_provinces$COD_PRO == click$id, ]
+
+                     if(!is.null(province_map_clicked$selected)){
+                       print(paste("previous province selected", province_map_clicked$selected))
+                       proxy %>% clearGroup("Selected")
+                       
+                     }   
                      
+                     
+                     proxy %>% addPolygons(data = selected_province,
+                                             fillOpacity = 1,
+                                             fillColor = "transparent",
+                                             group = "Selected",
+                                             weight = 5,
+                                             color = "black",
+                                             stroke = T,
+                                             layerId = selected_province$COD_PRO)
+                     
+                     #proxy %>% addPolylines(data = selected_province, layerId = selected_province$COD_PRO, color = "black", weight = 4, group = "Selected")
+                     province_map_clicked$selected <- selected_province$COD_PRO 
+
                      })
         observeEvent(input$municipalities_map_shape_click,
-                     {data$clickedMunicipality <- input$municipalities_map_shape_click})
+                     {data$clickedMunicipality <- input$municipalities_map_shape_click
+                     ####### highlight selection ####
+                     #define leaflet proxy for second regional level map
+                     click <-input$municipalities_map_shape_click
+                     mproxy <- leafletProxy("municipalities_map")
+                     #selected_province <- sardinian_provinces[sardinian_provinces$COD_PRO == click$id, ]
+                     allowed_municipalities_code <- map_threshold %>% mutate(codicecomune = gsub("^0", "", codicecomune)) %>% filter(esito_unita == 1) %>% select(codicecomune)
+                     allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]]) %>% unique(.)
+                     if (!is.null(data$clickedProvince[[1]])){
+                       
+                       province_code <- input$province_map_shape_click[["id"]]
+                       #province_symbol <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
+                       
+                       sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
+                     }
+                     
+                     
+                     
+                     selected_municipality <- sardinian_municipalities[sardinian_municipalities$PRO_COM == click$id, ]
+                     print("+++selected municipality++++")
+                     print(names(selected_municipality))
+                     print(selected_municipality$PRO_COM)
+                     
+                     
+                     if(!is.null(municipality_map_clicked$selected)){
+                       print(paste("previous municipality selected", municipality_map_clicked$selected))
+                       mproxy %>% clearGroup("mSelected")
+                       
+                     }   
+                     
+                     
+                     mproxy %>% addPolygons(data = selected_municipality,
+                                           fillOpacity = 1,
+                                           fillColor = "transparent",
+                                           group = "mSelected",
+                                           weight = 3,
+                                           color = "black",
+                                           stroke = T,
+                                           layerId = selected_municipality$PRO_COM)
+                     
+                     mproxy %>% addPolylines(data = selected_municipality, layerId = selected_municipality$PRO_COM, color = "black", weight = 4, group = "mSelected")
+                     municipality_map_clicked$selected <- selected_municipality$PRO_COM              
+                     
+                     
+                     
+                     
+                     
+                     
+                     })
         
         observeEvent(input$stop_map_filters,
                      {data$clickedProvince <- NULL
@@ -190,15 +240,15 @@ shinyServer(function(input, output, session) {
                 sardinian_provinces$measure <- sapply(sardinian_provinces$SIGLA, function(x) measure_selected[[2]][measure_selected[[1]] == x])
                 print(sardinian_provinces$measure)
                 
-                #qpal <- colorQuantile("YlOrRd", sardinian_provinces$arriv, n = 8)
-                pal <- colorNumeric("Purples", 
-                                    domain = sardinian_provinces$measure)
+                  pal <- colorQuantile("Blues", domain = sardinian_provinces$measure, n = 8)
+                # pal <- colorNumeric("Blues", 
+                #                     domain = sardinian_provinces$measure)
             
                 #~colorQuantile("YlOrRd", arriv)(arriv)
                 m <- leaflet() %>%
                         setView(lng=8.981, lat=40.072, zoom=8) %>%
                         addTiles() %>%
-                        addPolygons(data=sardinian_provinces, layerId = sardinian_provinces$COD_PRO, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.8, 
+                        addPolygons(data=sardinian_provinces, layerId = sardinian_provinces$COD_PRO, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.5, 
                                     fillColor = ~pal(measure),
                                     highlightOptions = highlightOptions(color = "white", weight = 2,
                                                                         bringToFront = TRUE), label = sardinian_provinces$PROVINCIA, labelOptions = labelOptions(clickable = FALSE, noHide = TRUE)) %>%
@@ -289,10 +339,10 @@ shinyServer(function(input, output, session) {
                         print(sardinian_municipalities$measure)
                         #~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area)
                         
-                        r <- leaflet(sardinian_municipalities)  %>%
+                        r <- leaflet() %>%
                                 setView(lng=longitude, lat=latitude, zoom=8) %>%
                                 addTiles() %>%
-                                addPolygons(color = "#444444", weight = 1, layerId = sardinian_municipalities$PRO_COM, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.8,
+                                addPolygons(data = sardinian_municipalities, color = "#444444", weight = 1, layerId = sardinian_municipalities$PRO_COM, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.8,
                                             fillColor = ~pal(measure),
                                             highlightOptions = highlightOptions(color = "white", weight = 2,
                                                                                 bringToFront = TRUE), label = sardinian_municipalities$COMUNE, labelOptions = labelOptions(clickable = FALSE, noHide = TRUE)) %>%
@@ -359,7 +409,7 @@ shinyServer(function(input, output, session) {
                                 #             highlightOptions = highlightOptions(color = "white", weight = 2,
                                 #                                                 bringToFront = TRUE), label = sardinian_municipalities$COMUNE)
                 }
-                
+                r
              #########   
         })
         
