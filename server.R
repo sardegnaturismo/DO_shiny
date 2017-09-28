@@ -87,6 +87,7 @@ shinyServer(function(input, output, session) {
                      #define leaflet proxy for second regional level map
                      click <-input$municipalities_map_shape_click
                      mproxy <- leafletProxy("municipalities_map")
+                     
                      #selected_province <- sardinian_provinces[sardinian_provinces$COD_PRO == click$id, ]
                      allowed_municipalities_code <- map_threshold %>% mutate(codicecomune = gsub("^0", "", codicecomune)) %>% filter(esito_unita == 1) %>% select(codicecomune)
                      allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]]) %>% unique(.)
@@ -102,13 +103,14 @@ shinyServer(function(input, output, session) {
                      
                      selected_municipality <- sardinian_municipalities[sardinian_municipalities$PRO_COM == click$id, ]
                      print("+++selected municipality++++")
+                     print(dim(sardinian_municipalities))
                      print(names(selected_municipality))
                      print(selected_municipality$PRO_COM)
                      
                      
                      if(!is.null(municipality_map_clicked$selected)){
-                       print(paste("previous municipality selected", municipality_map_clicked$selected))
-                       mproxy %>% clearGroup("mSelected")
+                       print(paste("+++ previous municipality selected", municipality_map_clicked$selected))
+                       # mproxy %>% clearGroup("mSelected")
                        
                      }   
                      
@@ -122,7 +124,7 @@ shinyServer(function(input, output, session) {
                                            stroke = T,
                                            layerId = selected_municipality$PRO_COM)
                      
-                     mproxy %>% addPolylines(data = selected_municipality, layerId = selected_municipality$PRO_COM, color = "black", weight = 4, group = "mSelected")
+                     #mproxy %>% addPolylines(data = selected_municipality, layerId = selected_municipality$PRO_COM, color = "black", weight = 4, group = "mSelected")
                      municipality_map_clicked$selected <- selected_municipality$PRO_COM              
                      
                      
@@ -348,6 +350,7 @@ shinyServer(function(input, output, session) {
                                                                                 bringToFront = TRUE), label = sardinian_municipalities$COMUNE, labelOptions = labelOptions(clickable = FALSE, noHide = TRUE)) %>%
                                              addLegend("bottomright", pal = pal, values = sardinian_municipalities$measure, title = legend_title, opacity = 1)                                        
                 }
+                r
         })
         
         output$structure_map <- renderLeaflet({
