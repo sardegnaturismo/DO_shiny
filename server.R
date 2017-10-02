@@ -51,7 +51,9 @@ shinyServer(function(input, output, session) {
         accomodated_bar <- reactiveValues(ev = NULL)
         age_bar <- reactiveValues(ev = NULL)
         province_map_clicked <- reactiveValues(selected = NULL)
+        province_map <- reactiveValues(proxy = NULL)
         municipality_map_clicked <- reactiveValues(selected = NULL)
+        
         ##### Observers ###################
         observeEvent(input$province_map_shape_click,
                      {data$clickedProvince <- input$province_map_shape_click
@@ -59,12 +61,12 @@ shinyServer(function(input, output, session) {
                      ####### highlight selection ####
                      #define leaflet proxy for second regional level map
                        click <-input$province_map_shape_click
-                       proxy <- leafletProxy("province_map")
+                       province_map$proxy <- leafletProxy("province_map")
                        selected_province <- sardinian_provinces[sardinian_provinces$COD_PRO == click$id, ]
 
                      if(!is.null(province_map_clicked$selected)){
                        print(paste("previous province selected", province_map_clicked$selected))
-                       proxy %>% clearGroup("Selected")
+                       province_map$proxy %>% clearGroup("Selected")
                        
                      }   
                      
@@ -78,7 +80,7 @@ shinyServer(function(input, output, session) {
                      #                         stroke = T,
                      #                         layerId = selected_province$COD_PRO)
                      
-                     proxy %>% addPolylines(data = selected_province, layerId = selected_province$COD_PRO, color = "black", weight = 4, group = "Selected")
+                     province_map$proxy %>% addPolylines(data = selected_province, layerId = selected_province$COD_PRO, color = "black", weight = 4, group = "Selected")
                      province_map_clicked$selected <- selected_province$COD_PRO 
 
                      })
@@ -120,7 +122,9 @@ shinyServer(function(input, output, session) {
         
         observeEvent(input$stop_map_filters,
                      {data$clickedProvince <- NULL
-                      data$clickedMunicipality <- NULL})
+                      data$clickedMunicipality <- NULL
+                      province_map$proxy %>% clearGroup("Selected")
+                      })
         observeEvent(input$it, {
                 change$language <- "it"
                 # nations <- aggregate_movements$descrizione
@@ -812,7 +816,7 @@ shinyServer(function(input, output, session) {
                 reference_month_list <- get_longest_vector(month_list)
                 
                 print(paste("Lunghezza mesi: ", length(reference_month_list)))
-                print(m)
+                #print(m)
                 ### Layout params              
                 y_axix_title <- measure
                 xform <- list(categoryorder = "array", categoryarray = reference_month_list, title = "", showticklabels = TRUE)
