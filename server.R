@@ -134,6 +134,18 @@ shinyServer(function(input, output, session) {
                 
                 
         })
+        
+        observe({
+          query <- parseQueryString(session$clientData$url_search)
+          print("*** Query ****")
+          if (query$language == "en"){
+            change$language <- "en"
+          }else{
+            change$language <- "it"
+          }
+          
+        })
+        
         observeEvent(input$en, {
                 change$language <- "en"
                 # nations <- aggregate_movements$descrizione
