@@ -138,7 +138,8 @@ shinyServer(function(input, output, session) {
         observe({
           query <- parseQueryString(session$clientData$url_search)
           print("*** Query ****")
-          if (query$language == "en"){
+          print(query)
+          if ((!is.null(query$language)) && (query$language == "en")){
             change$language <- "en"
           }else{
             change$language <- "it"
