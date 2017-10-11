@@ -168,6 +168,7 @@ shinyServer(function(input, output, session) {
                 prov_pie$ev <- NULL
                 nation_bar$ev <- NULL
                 region_bar$ev <- NULL
+                js$resetClick()
                 shinyjs::show("prov_by_nation", anim = TRUE, animType = "fade")
                 shinyjs::show("prov_by_region", anim = TRUE, animType = "fade")
 
@@ -175,7 +176,8 @@ shinyServer(function(input, output, session) {
         observeEvent(input$stop_profiling_filter, {
           sex_pie$reset <- TRUE
           sex_pie$ev <- NULL
-
+          js$resetClick()
+          
         })
         observeEvent(input$stop_accomodated_type_filter, {
            accomodated_bar$ev <- NULL
@@ -680,6 +682,8 @@ shinyServer(function(input, output, session) {
                 ### Color selection ####
                 d <- sex_pie$ev
                 print(paste("sex filter: ", d[["pointNumber"]]))
+                
+                
                 colors <- c('rgb(255, 127, 14)', 'rgb(31, 119, 180)')
                 if (!is.null(d) && d[["pointNumber"]] == 0){ ##### Female ####
                   colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')

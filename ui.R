@@ -21,8 +21,9 @@ names(r_colors) <- colors()
 
 shinyUI(fluidPage(
    includeCSS("www/DO.css"),        
-   useShinyjs(),                
-        
+   useShinyjs(),
+   extendShinyjs(text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click-sex_pie', 'null'); }"),
+   extendShinyjs(text = "shinyjs.resetClick = function() { Shiny.onInputChange('.clientValue-plotly_click-prov_pie', 'null'); }"),        
   #Top header
   div(
           tags$img(src="logost.png", class='header_left'),
