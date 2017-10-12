@@ -168,7 +168,7 @@ shinyServer(function(input, output, session) {
                 prov_pie$ev <- NULL
                 nation_bar$ev <- NULL
                 region_bar$ev <- NULL
-                js$resetClick()
+                js$resetProvenienceClick()
                 shinyjs::show("prov_by_nation", anim = TRUE, animType = "fade")
                 shinyjs::show("prov_by_region", anim = TRUE, animType = "fade")
 
@@ -176,7 +176,7 @@ shinyServer(function(input, output, session) {
         observeEvent(input$stop_profiling_filter, {
           sex_pie$reset <- TRUE
           sex_pie$ev <- NULL
-          js$resetClick()
+          js$resetProfileClick()
           
         })
         observeEvent(input$stop_accomodated_type_filter, {
