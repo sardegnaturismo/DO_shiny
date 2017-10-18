@@ -62,131 +62,137 @@ shinyUI(fluidPage(
           #               c("Arrivi", "Presenze"), selected = "Arrivi")
           
   ), br(),
-  fluidRow(
-          id = "page_bar",
-       column(
-               width = 8,
-               htmlOutput("map_bar", container = tags$p, class="map_bar")
-               
-       ),
-       column(
-               width = 4,
-               uiOutput("map_filter_button")
-               #actionButton("stop_map_filters", "Elimina filtri mappe", class='stop_filter')
-       )
+  
+  
+  
+  sidebarLayout(
+    sidebarPanel(id="active_filters", width=2,
+                       
+                       div(id="footer" 
+                       # HTML('<ul class="nav nav-tabs">
+                       #      <li class="active"><a id="show_filters" href="#mostra-filtri" data-toggle="tab">Filtri Applicati</a></li>
+                       #      </ul>')
+                       )),
+    mainPanel(
+ 
       
-       
-       
-  ),
-  
-  fluidRow(
-          column( 
-                  width = 6,
-                  class = "main_map",
-                  leafletOutput("province_map", height = "600")
-                                           
-          ),
-          column(
-                  width = 6,
-                  class = 'border_map',
-                  leafletOutput("municipalities_map", height = "280")
-                        
-                
-          ),
-          column(
-                  width = 6,
-                  class = 'border_map',
-                  leafletOutput("structure_map", height = "280")
-                  
-                  
-          )
+      fluidRow(
+        column( 
+          width = 6,
+          class = "main_map",
+          leafletOutput("province_map", height = "600")
           
-
-  ),
-  div(
-          id='pie_bar',
-          column(
-                  width = 8,
-                  uiOutput("provenience_bar")
-          ),
-          column(
-                  width = 4,
-                  uiOutput("provenience_filter_button")
-          )
-  ), br(), br(),        
-  fluidRow(
+        ),
         column(
-                offset = 4,
-                width = 4,
-                plotlyOutput("proveniences",  height = '600px')
-                # verbatimTextOutput("prov_click")
-        )),br(), br(), br(),
-  fluidRow(
-          column(
-                  width = 12, 
-                  plotlyOutput("prov_by_nation")
-          )
-  ), br(), br(), br(),br(), br(),
-  fluidRow(
-          column(
-                  width = 12,
-                  plotlyOutput("prov_by_region")
-          )
-  ),br(), br(), br(), br(),
-  
-  fluidRow(
-          width = 12,
-          plotlyOutput("trend_comparison")
+          width = 6,
+          class = 'border_map',
+          leafletOutput("municipalities_map", height = "280")
           
-  ),br(), br(), br(),
-  
-  
-  div(
-          id='profiling_bar',
-          column(
-                  width = 8,
-                  uiOutput("profiling_bar_title")
-          ),
-          column(
-                  width = 4,
-                  uiOutput("profiling_filter_button")
-                  
-          )
-
-  ), br(), br(), br(),
-  fluidRow(
-          column(
-                  offset = 4,
-                  width = 4,
-                  plotlyOutput("sex",  height = '600px')                  
-                  
-          )
-  ), br(), br(), br(),
-  div(
-          id='type_bar',
-          column(
-                  width = 8,
-                  uiOutput("type_bar_title")
-          ),
-          column(
-                  width = 4,
-                  uiOutput("type_filter_button")
-
-          )
-
-  ), br(), br(), br(),
-  fluidRow(
-          column(
-                  width = 12, 
-                  plotlyOutput("accomodated_type")
-          )
-  ), br(), br(), br(),
-  fluidRow(
-          column(
-                  width = 12, 
-                  plotlyOutput("age_range")
-          )
+          
+        ),
+        column(
+          width = 6,
+          class = 'border_map',
+          leafletOutput("structure_map", height = "280")
+          
+          
+        )
+        
+        
+      ),
+      div(
+        id='pie_bar',
+        column(
+          width = 8,
+          uiOutput("provenience_bar")
+        ),
+        column(
+          width = 4,
+          uiOutput("provenience_filter_button")
+        )
+      ), br(), br(),        
+      fluidRow(
+        column(
+          offset = 4,
+          width = 4,
+          plotlyOutput("proveniences",  height = '600px')
+          # verbatimTextOutput("prov_click")
+        )),br(), br(), br(),
+      fluidRow(
+        column(
+          width = 12, 
+          plotlyOutput("prov_by_nation")
+        )
+      ), br(), br(), br(),br(), br(),
+      fluidRow(
+        column(
+          width = 12,
+          plotlyOutput("prov_by_region")
+        )
+      ),br(), br(), br(), br(),
+      
+      fluidRow(
+        width = 12,
+        plotlyOutput("trend_comparison")
+        
+      ),br(), br(), br(),
+      
+      
+      div(
+        id='profiling_bar',
+        column(
+          width = 8,
+          uiOutput("profiling_bar_title")
+        ),
+        column(
+          width = 4,
+          uiOutput("profiling_filter_button")
+          
+        )
+        
+      ), br(), br(), br(),
+      fluidRow(
+        column(
+          offset = 4,
+          width = 4,
+          plotlyOutput("sex",  height = '600px')                  
+          
+        )
+      ), br(), br(), br(),
+      div(
+        id='type_bar',
+        column(
+          width = 8,
+          uiOutput("type_bar_title")
+        ),
+        column(
+          width = 4,
+          uiOutput("type_filter_button")
+          
+        )
+        
+      ), br(), br(), br(),
+      fluidRow(
+        column(
+          width = 12, 
+          plotlyOutput("accomodated_type")
+        )
+      ), br(), br(), br(),
+      fluidRow(
+        column(
+          width = 12, 
+          plotlyOutput("age_range")
+        )
+      )
+      
+    )
   )
+
+  
+
+    
+
+  
                   
 
 
