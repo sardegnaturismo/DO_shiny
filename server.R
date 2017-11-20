@@ -159,7 +159,9 @@ shinyServer(function(input, output, session) {
         observe({prov_pie$ev <- event_data("plotly_click", source = 'prov_pie')})
         observe({sex_pie$ev <- event_data("plotly_click", source = "sex_pie" )})
         observe({nation_bar$ev <- event_data("plotly_click", source = "nation_bar")})
+        # observe({nation_bar$dbev <- event_data("plotly_doubleclick", source = "nation_bar")})
         observe({region_bar$ev <- event_data("plotly_click", source = "region_bar")})
+        # observe({region_bar$dbev <- event_data("plotly_doubleclick", source = "region_bar")})        
         observe({accomodated_bar$ev <- event_data("plotly_click", source = "accomodated_bar")})
         observe({age_bar$ev <- event_data("plotly_click", source = "age_bar")})
                  
@@ -185,7 +187,7 @@ shinyServer(function(input, output, session) {
         })
 
         
-        
+
         #################################################
         
         #### UI multilingual element generation ##### 
@@ -567,6 +569,7 @@ shinyServer(function(input, output, session) {
                 background_color = 'rgba(204,204,204,1)'
                 color_set = rep(base_color, nrow(provenience_by_nation))
                 if (!is.null(nation_ev)){
+                     shinyjs::hide("prov_by_region", anim = T, animType = "fade")
                      if (!is.null(region_bar$ev)){
                        region_bar$ev <- NULL
                      }
@@ -575,7 +578,14 @@ shinyServer(function(input, output, session) {
                      color_set = rep(background_color, nrow(provenience_by_nation))
                      names(color_set) = provenience_by_nation$nazione
                      color_set[nation_chosen] = base_color
-                    }
+                }
+                
+                onevent("dblclick", "provenience_by_nation", shinyjs::show("prov_by_region")) 
+                # print("double click ****")
+                # print(nation_bar$dbev)
+                # if (!is.null(nation_bar$dbev)){
+                #   shinyjs::show("prov_by_region", anim = T, animType = "fade")
+                # }
 
                 
                 #color1[1] = line_color
@@ -634,6 +644,7 @@ shinyServer(function(input, output, session) {
                 background_color = 'rgba(204,204,204,1)'
                 color_set = rep(base_color, nrow(prov_by_region))
                 if (!is.null(region_ev)){
+                  shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
                   if (!is.null(nation_bar$ev)){
                     nation_bar$ev <- NULL
                   }
@@ -644,6 +655,8 @@ shinyServer(function(input, output, session) {
                   color_set[region_chosen] = base_color
                 }
                 
+                
+                onevent("dblclick", "provenience_by_region", shinyjs::show("prov_by_nation"))
                 
                 plot_title <- tr("distribuzione_per_regione", change$language)
                 y_axix_title <- measure

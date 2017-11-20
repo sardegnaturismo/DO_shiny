@@ -20,7 +20,9 @@ names(r_colors) <- colors()
 
 
 shinyUI(fluidPage(
-   includeCSS("www/DO.css"),        
+   includeCSS("www/DO.css"),
+   tags$script(src="https://cdn.plot.ly/plotly-latest.min.js"),
+   includeScript("www/js/redraw.js"),
    useShinyjs(),
    extendShinyjs(text = "shinyjs.resetProfileClick = function() { Shiny.onInputChange('.clientValue-plotly_click-sex_pie', 'null'); }"),
    extendShinyjs(text = "shinyjs.resetProvenienceClick = function() { Shiny.onInputChange('.clientValue-plotly_click-prov_pie', 'null'); }"),        
@@ -124,13 +126,18 @@ shinyUI(fluidPage(
   fluidRow(
           column(
                   width = 12, 
-                  plotlyOutput("prov_by_nation")
+                  div(id="provenience_by_nation",
+                      plotlyOutput("prov_by_nation")    
+                  )
+                  
           )
   ), br(), br(), br(),br(), br(),
   fluidRow(
           column(
                   width = 12,
-                  plotlyOutput("prov_by_region")
+                  div(id="provenience_by_region",
+                      plotlyOutput("prov_by_region"))
+
           )
   ),br(), br(), br(), br(),
   
