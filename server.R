@@ -480,15 +480,36 @@ shinyServer(function(input, output, session) {
                 }
                 plot_title <- tr("distribuzione_provenienza", change$language)
                 
-                
+                print("nation bar ev: ")
+                print(paste("nation_bar_ev: ", nation_bar$ev))
+                print("region bar ev: ")
+                print(paste("region bar ev: ", region_bar$ev))
                 #### Color selection ####
                 colors <- c('rgb(255, 127, 14)', 'rgb(31, 119, 180)')
-                if (!is.null(d) && d[["pointNumber"]] == 0){ ##### Estero ####
+                if (is.null(d) && !is.null(nation_bar$ev)){
+                   region_bar$ev <- NULL        
+                   colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
+                   shinyjs::hide("prov_by_region", anim = T, animType = "fade")
+                }else if (is.null(d) && !is.null(region_bar$ev)){
+                   nation_bar$ev <- NULL        
+                   colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
+                   shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
+                }else if ((!is.null(d) && d[["pointNumber"]] == 0) || ((!is.null(d) && d[["pointNumber"]] == 0) && (!is.null(region_bar$ev)))){ ##### Estero ####
+                        # js$resetProvByRegionClick()
+                        # print("***********************************sono all'estero ****")
                         region_bar$ev <- NULL
                         colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
-                }else if(!is.null(d) && d[["pointNumber"]] == 1){ #### Italia #####
+                        shinyjs::hide("prov_by_region", anim = T, animType = "fade")
+                        shinyjs::show("prov_by_nation", anim = T, animType = "fade")
+                }else if ((!is.null(d) && d[["pointNumber"]] == 1) || ((!is.null(d) && d[["pointNumber"]] == 1) && (!is.null(nation_bar$ev)))){ #### Italia #####
+                        # js$resetProvByNationClick()
+                        # print("***********************************sono in italia ****")
+                        
                         nation_bar$ev <- NULL
                         colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
+                        shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
+                        shinyjs::show("prov_by_region", anim = T, animType = "fade")
+                        
                 }
                 
                 
@@ -507,16 +528,16 @@ shinyServer(function(input, output, session) {
         # })
         
         output$prov_by_nation <- renderPlotly({
-
-                d <- prov_pie$ev
-                if (!is.null(d) && d[["pointNumber"]] == 1){
-                        shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
-                        shinyjs::show("prov_by_region", anim = T, animType = "fade")
-                }else if (!is.null(d) && d[["pointNumber"]] == 0){
-                        shinyjs::hide("prov_by_region", anim = T, animType = "fade")
-                        shinyjs::show("prov_by_nation", anim = T, animType = "fade")
-                } 
-                
+############################
+                # d <- prov_pie$ev
+                # if (!is.null(d) && d[["pointNumber"]] == 1){
+                #         shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
+                #         shinyjs::show("prov_by_region", anim = T, animType = "fade")
+                # }else if (!is.null(d) && d[["pointNumber"]] == 0){
+                #         shinyjs::hide("prov_by_region", anim = T, animType = "fade")
+                #         shinyjs::show("prov_by_nation", anim = T, animType = "fade")
+                # } 
+###################################################                
 
                 province_abbreviation <- NULL
                 municipality_code <- NULL
@@ -568,11 +589,14 @@ shinyServer(function(input, output, session) {
                 base_color = 'rgb(255, 127, 14)'
                 background_color = 'rgba(204,204,204,1)'
                 color_set = rep(base_color, nrow(provenience_by_nation))
+
                 if (!is.null(nation_ev)){
-                     shinyjs::hide("prov_by_region", anim = T, animType = "fade")
-                     if (!is.null(region_bar$ev)){
-                       region_bar$ev <- NULL
-                     }
+######tmp#########################################                        
+                     # shinyjs::hide("prov_by_region", anim = T, animType = "fade")
+                     # if (!is.null(region_bar$ev)){
+                     #   region_bar$ev <- NULL
+                     # }
+####################################################                        
                      nation_chosen <- nation_ev[["x"]]
                      #index <- as.numeric(nation_ev[["pointNumber"]]) + 1
                      color_set = rep(background_color, nrow(provenience_by_nation))
@@ -581,7 +605,7 @@ shinyServer(function(input, output, session) {
                 }
                 
                 onevent("dblclick", "provenience_by_nation", shinyjs::show("prov_by_region")) 
-                # print("double click ****")
+                # # print("double click ****")
                 # print(nation_bar$dbev)
                 # if (!is.null(nation_bar$dbev)){
                 #   shinyjs::show("prov_by_region", anim = T, animType = "fade")
@@ -644,10 +668,12 @@ shinyServer(function(input, output, session) {
                 background_color = 'rgba(204,204,204,1)'
                 color_set = rep(base_color, nrow(prov_by_region))
                 if (!is.null(region_ev)){
-                  shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
-                  if (!is.null(nation_bar$ev)){
-                    nation_bar$ev <- NULL
-                  }
+#################tmp#############                        
+                  # shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
+                  # if (!is.null(nation_bar$ev)){
+                  #   nation_bar$ev <- NULL
+                  # }
+####################################                        
                   region_chosen <- region_ev[["x"]]
                   #index <- as.numeric(region_ev[["pointNumber"]]) + 1
                   color_set = rep(background_color, nrow(prov_by_region))
