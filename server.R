@@ -25,6 +25,7 @@ source("R/translator.R")
 source("R/layoutBlocks.R")
 source("internazionalization/translation_functions.R")
 
+
 provinces <- readOGR("shapes/Prov2016_rprj.shp", encoding = "UTF-8")
 sardinian_provinces <- subset(provinces, provinces$PROVINCIA %in% c("Sassari", "Nuoro", "Cagliari", "Oristano", "Olbia-Tempio", "Ogliastra",
                                                                     "Medio Campidano", "Carbonia-Iglesias"))
@@ -33,6 +34,7 @@ aggregate_movements <- fread("data/agg_ope_line_20xx.csv")
 aggregate_web_data <- fread("data/agg_ope_web.csv", encoding = "UTF-8")
 map_threshold <- fread("data/soglia_map_prov_com_ope.csv")
 structures <- fread("data/struttura_info_ope.csv")
+coverage <- fread("data/copertura-sardegna.csv", colClasses = c("codicecomune" = "character"))
 
 ### load translation file ###
 load("internazionalization/translation.bin")
@@ -230,6 +232,10 @@ shinyServer(function(input, output, session) {
         output$type_filter_button <- renderUI({
                 generateFilterButton(change$language, "stop_accomodated_type_filter", "elimina_filtri_alloggiato")
         })
+        
+        output$details_button <- renderUI({
+          tags$button(tr("dettagli", change$language), class="btn btn-info", `data-toggle`="collapse", `data-target`="#demo")
+        })
          
         
         output$province_map <- renderLeaflet({
@@ -277,28 +283,23 @@ shinyServer(function(input, output, session) {
                 print("clickMarker")
                 print(data$clickedProvince)
                 
-               
-                # if (!is.null(input$province_map_shape_click[[1]])){
-                #         prov_code = input$province_map_shape_click[[1]]
-                #         selected_area =  as.character(sardinian_provinces$PROVINCIA[sardinian_provinces$COD_PRO == prov_code])      
-                #     }
+                out <- tr("map_bar_region", change$language)
                 if(!is.null(data$clickedProvince[[1]])){
                         prov_code <- data$clickedProvince[[1]]
                         selected_area = as.character(sardinian_provinces$PROVINCIA[sardinian_provinces$COD_PRO == prov_code])
-                }
-                if(selected_area == "Sardegna"){
-                        #out <- paste("Visualizza i dati turistici dell'intera <strong> Sardegna</strong> scorrendo in basso la pagina oppure seleziona una <strong>provincia</strong> nella mappa")
-                        out <- tr("map_bar_region", change$language)
-                        print("selected area: ")
-                        print(selected_area)
-                       
-                        
-                        
-                }else{
                         area <- tr(selected_area, change$language)
                         out <- paste(tr("map_bar_province1", change$language), "<strong>", area, "</strong>", tr("map_bar_province2", change$language))
+                        
+                        if(!is.null(data$clickedMunicipality[["id"]])){
+                            municipality_code <- data$clickedMunicipality[["id"]]
+                            selected_area <- municipalities$COMUNE[municipalities$PRO_COM == municipality_code]
+                            out <- paste(tr("map_bar_mun1", change$language), "<strong>", selected_area, "</strong>", tr("map_bar_mun2", change$language))
+                        }
+  
                 }
                 
+
+                out <- paste(out, "<p class='disclaimer'>", tr("disclaimer", change$language), "</p>")
                 out
         })
         
@@ -429,7 +430,40 @@ shinyServer(function(input, output, session) {
         })
         
         
+        output$current_coverage <- renderText({
+          province_abbreviation <- NULL
+          municipality_code <- NULL
+          
+          selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+          print("current coverage selections")
+          print(selections)
+          province_abbreviation <- selections[[1]]
+          municipality_code <- selections[[2]]
+          coverage = get_current_coverage(coverage, province_abbreviation, municipality_code)
+          mese = tr(tolower(coverage[[1]]), change$language)
+          copertura = coverage[[2]]
+          print(paste("copertura is null: ", is.null(copertura)))
+          if (!is.null(copertura) & copertura != '' & !is.na(copertura)){
+            copertura = copertura*100
+            copertura = paste(copertura, "%")
+          }else{
+            copertura = "ND"
+          }
+          res <- paste(tr("copertura_mese", change$language), mese, ":", copertura)
+        })
         
+        
+        output$coverage <- renderDataTable({
+            province_abbreviation <- NULL
+            municipality_code <- NULL
+            selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+            province_abbreviation <- selections[[1]]
+            municipality_code <- selections[[2]]
+            coverage <- get_coverage(coverage, province_abbreviation, municipality_code)
+            names(coverage) = c(tr("anno", change$language), tr("mese", change$language), tr("copertura", change$language))
+            coverage
+
+        }, options = list(lengthMenu = c(3, 6, 12), pageLength = 12))
         
         output$proveniences <- renderPlotly({
                 province_abbreviation <- NULL

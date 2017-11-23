@@ -26,8 +26,7 @@ shinyUI(fluidPage(
    useShinyjs(),
    extendShinyjs(text = "shinyjs.resetProfileClick = function() { Shiny.onInputChange('.clientValue-plotly_click-sex_pie', 'null'); }"),
    extendShinyjs(text = "shinyjs.resetProvenienceClick = function() { Shiny.onInputChange('.clientValue-plotly_click-prov_pie', 'null'); }"),
-   # extendShinyjs(text = "shinyjs.resetProvByNationClick = function() { Shiny.onClick('.clientValue-plotly_click-nation_bar', 'null'); }"),
-   # extendShinyjs(text = "shinyjs.resetProvByRegionClick = function() { Shiny.onClick('.clientValue-plotly_click-region_bar', 'null'); }"),
+
   #Top header
   div(
           tags$img(src="logost.png", class='header_left'),
@@ -78,10 +77,16 @@ shinyUI(fluidPage(
                uiOutput("map_filter_button")
                #actionButton("stop_map_filters", "Elimina filtri mappe", class='stop_filter')
        )
-      
-       
-       
+
   ),
+  fluidRow(
+        id = "coverage",
+        column(width = 5,
+               class = "coverage-container",
+                 textOutput("current_coverage"), 
+                 div(id='details', uiOutput("details_button")),                 
+                 div(id='demo', class='collapse', dataTableOutput("coverage"))
+                )),
   
   fluidRow(
           column( 
