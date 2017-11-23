@@ -8,6 +8,9 @@ presenze;Presenze;Presences
 map_bar_region;Visualizza i dati turistici dell'intera <strong> Sardegna</strong> scorrendo in basso la pagina oppure seleziona una <strong>provincia</strong> nella mappa;Display <strong>Sardinian</strong> tourism data scrolling down the page or select a <strong>province</strong> in the map
 map_bar_province1;Visualizza i dati turistici della provincia;Display
 map_bar_province2;scorrendo in basso la pagina oppure seleziona un <strong>comune</strong> nella mappa;tourism data scrolling down the page or select a <strong>town</strong> in the map
+map_bar_mun1;Visualizza i dati turistici e le strutture ricettive del comune di;Display
+map_bar_mun2;scorrendo in basso la pagina;'s tourism data scrolling down the page
+disclaimer;Nota bene: i dati visualizzati sono relativi al seguente tasso di copertura; Note well: data refers to the following coverage rate
 Cagliari;Cagliari;Cagliari's
 Oristano;Oristano;Oristano's
 Nuoro;Nuoro;Nuoro's
@@ -138,3 +141,8 @@ tipologia;<b>Tipologia: </b>;<b>Type: </b>
 classificazione;<b>Classificazione: </b>;<b>Category: </b>
 mesi_apertura;<b>Mesi di apertura: </b>;<b>Months of opening: </b>
 posti_letto;<b>Posti letto: </b>;<b>Beds: </b>
+anno;Anno;Year
+mese;Mese;Month
+copertura;Copertura;Coverage
+copertura_mese;Copertura del mese di; Coverage in month of
+dettagli; Dettagli; Details
