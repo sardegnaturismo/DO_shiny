@@ -34,7 +34,7 @@ aggregate_movements <- fread("data/agg_ope_line_20xx.csv")
 aggregate_web_data <- fread("data/agg_ope_web.csv", encoding = "UTF-8")
 map_threshold <- fread("data/soglia_map_prov_com_ope.csv")
 structures <- fread("data/struttura_info_ope.csv")
-coverage <- fread("data/copertura-sardegna.csv", colClasses = c("codicecomune" = "character"))
+coverage <- fread("data/copertura_sardegna.csv", colClasses = c("codicecomune" = "character"))
 
 ### load translation file ###
 load("internazionalization/translation.bin")
@@ -444,7 +444,7 @@ shinyServer(function(input, output, session) {
           copertura = coverage[[2]]
           print(paste("copertura is null: ", is.null(copertura)))
           if (!is.null(copertura) & copertura != '' & !is.na(copertura)){
-            copertura = copertura*100
+            copertura = as.numeric(copertura)*100
             copertura = paste(copertura, "%")
           }else{
             copertura = "ND"

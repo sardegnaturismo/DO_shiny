@@ -28,7 +28,6 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
 
 get_current_coverage <- function(dataset, province_abbreviation = NULL, municipality_code = NULL){
 
-  #current_month = select(filter(dataset, periodo == "anno1" & provincia == '' & anno_rif == max(anno_rif) & mese == max(mese)), c("mesestr_ita"))
    if (is.null(province_abbreviation)){
      dataset <- filter(dataset, provincia == '')
    }else if (!is.null(province_abbreviation)){
@@ -42,12 +41,12 @@ get_current_coverage <- function(dataset, province_abbreviation = NULL, municipa
      }
    }
 
-  current_coverage <- filter(dataset, periodo == "anno1" & anno_rif == max(anno_rif)) %>% filter(mese == max(mese)) %>% select(c("mesestr_ita", "copertura"))
+  current_coverage <- filter(dataset, periodo == "anno1" & anno_rif == max(as.numeric(anno_rif))) %>% filter(mese == max(as.numeric(mese))) %>% select(c("mesestr_ita", "copertura"))
   # current_coverage = select(filter(dataset, periodo == 'anno1' & anno_rif == max(anno_rif) & mese == max(mese)), c("mesestr_ita", "copertura"))    
 
   names(current_coverage) <- c("mese", "copertura")
   if(nrow(current_coverage) == 0){
-    current_month <- filter(dataset, periodo == "anno1" & anno_rif == max(anno_rif)) %>% filter(provincia == '' & mese == max(mese)) %>% select(c("mesestr_ita")) 
+    current_month <- filter(dataset, periodo == "anno1" & anno_rif == max(as.numeric(anno_rif))) %>% filter(provincia == '' & mese == max(as.numeric(mese))) %>% select(c("mesestr_ita")) 
     current_coverage[1,1] = current_month
     current_coverage[1,2] = ""
   }
@@ -58,21 +57,26 @@ get_current_coverage <- function(dataset, province_abbreviation = NULL, municipa
 
 get_coverage <- function(dataset, province_abbreviation = NULL, municipality_code = NULL){
   if (is.null(province_abbreviation)){
-    dataset <- filter(dataset, periodo == "anno1" & provincia == '') %>% arrange(desc(anno_rif), desc(mese))
+    dataset <- filter(dataset, periodo == "anno1" & provincia == '') %>% arrange(desc(as.numeric(anno_rif)), desc(as.numeric(mese)))
   }else{
     if (is.null(municipality_code)){
-      dataset <- filter(dataset, periodo == "anno1" & provincia == province_abbreviation & codicecomune == '') %>% arrange(desc(anno_rif), desc(mese))
+      dataset <- filter(dataset, periodo == "anno1" & provincia == province_abbreviation & codicecomune == '') %>% arrange(desc(as.numeric(anno_rif)), desc(as.numeric(mese)))
     }else{
       if (substring(municipality_code, 1, 1) == "9"){
         municipality_code = paste("0", municipality_code, sep = '')
       }
-      dataset <- filter(dataset, periodo == "anno1" & provincia == province_abbreviation & codicecomune == municipality_code) %>% arrange(desc(anno_rif), desc(mese))
+      dataset <- filter(dataset, periodo == "anno1" & provincia == province_abbreviation & codicecomune == municipality_code) %>% arrange(desc(as.numeric(anno_rif)), desc(as.numeric(mese)))
       
     }
   }
   coverage <- select(dataset, c("anno_rif", "mesestr_ita", "copertura"))
   if(nrow(coverage) != 0){
-    coverage$copertura <- lapply(coverage$copertura, FUN = function(x) {if (!is.na(x)){paste(x*100, "%", sep = '')}else{"-"}})
+    coverage$copertura <- lapply(coverage$copertura, FUN = function(x) {
+      if (!is.na(x) & x != ''){
+        paste(as.numeric(x)*100, "%", sep = '')
+      }else{
+        "ND"}
+      })
   }else{
     coverage[1,1] = ""
     coverage[1,2] = ""
