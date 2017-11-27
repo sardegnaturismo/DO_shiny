@@ -57,39 +57,45 @@ filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_c
       dataset <- dataset %>% filter(!grepl("^9999", dataset[[target_field]])) 
     }
   }
-  
-  if(names(dataset)[1] == "regione" && !is.null(profile_pie_event)){
-    if (profile_pie_event[["pointNumber"]] == 0){
-      paste("filtering females")
-      dataset <- dataset %>% filter(sesso_str == "F")
-    }else if (profile_pie_event[["pointNumber"]] == 1){
-      paste("filtering males")
-      dataset <- dataset %>% filter(sesso_str == "M")
-    }
-  }
-  
-  if(!is.null(nation_bar_ev)){
-    print("*** inside filter dataset ***")
-    print(paste("lang chosen: ", lang_chosen))
-    if(lang_chosen == "en"){
-      target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
-    }else{
-      target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")          
-    }
-    print(paste("target field 2:", target_field2))
-    dataset <- dataset %>% filter(dataset[[target_field2]] == nation_bar_ev[["x"]])
-    
-  }
-  if (!is.null(region_bar_ev)){
-    if(lang_chosen == "en"){
-      target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
-    }else{
-      target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
-    }
-    print(paste("target field 3:", target_field3))
-    dataset <- dataset %>% filter(dataset[[target_field3]] == region_bar_ev[["x"]])    
-  }
+  #browser()
+if(!is.null(nation_bar_ev)){
+        print("*** inside filter dataset ***")
+        print(paste("lang chosen: ", lang_chosen))
+        if(lang_chosen == "en"){
+                target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
+        }else{
+                target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")          
+        }
+        print(paste("target field 2:", target_field2))
+        dataset <- dataset %>% filter(dataset[[target_field2]] == nation_bar_ev[["x"]])
         
+}
+if (!is.null(region_bar_ev)){
+        if(lang_chosen == "en"){
+                target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
+        }else{
+                target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
+        }
+        print(paste("target field 3:", target_field3))
+        dataset <- dataset %>% filter(dataset[[target_field3]] == region_bar_ev[["x"]])    
+}
+
+
+  if(names(dataset)[1] == "regione" && !is.null(profile_pie_event)){
+          if (length(unique(dataset$sesso)) != 1){
+                  if (profile_pie_event[["pointNumber"]] == 0){
+                          #paste("filtering females")
+                          print("filtering females")
+                          dataset <- dataset %>% filter(sesso_str == "F")
+                  }else if (profile_pie_event[["pointNumber"]] == 1){
+                          print("filtering males")
+                          dataset <- dataset %>% filter(sesso_str == "M")
+                  }                  
+          }else{
+                  dataset
+          }
+  }
+  
   if(!is.null(accomodated_bar_ev)){
           accomodated_type_chosen = accomodated_bar_ev[["x"]]
           print(paste("PRE accomodated type chosen: ", accomodated_type_chosen))
