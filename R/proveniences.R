@@ -71,9 +71,9 @@ get_coverage <- function(dataset, province_abbreviation = NULL, municipality_cod
   }
   coverage <- select(dataset, c("anno_rif", "mesestr_ita", "copertura"))
   if(nrow(coverage) != 0){
-    coverage$copertura <- lapply(coverage$copertura, FUN = function(x) {
+    coverage$copertura <- sapply(coverage$copertura, FUN = function(x) {
       if (!is.na(x) & x != ''){
-        paste(as.numeric(x)*100, "%", sep = '')
+        as.numeric(x)*100
       }else{
         "ND"}
       })
