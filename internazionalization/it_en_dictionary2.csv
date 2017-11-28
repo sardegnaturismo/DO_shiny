@@ -144,5 +144,5 @@ posti_letto;<b>Posti letto: </b>;<b>Beds: </b>
 anno;Anno;Year
 mese;Mese;Month
 copertura;Copertura (%);Coverage (%)
-copertura_mese;Copertura del mese di; Coverage in month of
-dettagli; Dettagli; Details
+copertura_mese;Copertura del mese di;Coverage in month of
+dettagli;Dettagli;Details

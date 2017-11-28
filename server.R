@@ -462,7 +462,6 @@ shinyServer(function(input, output, session) {
             coverage <- get_coverage(coverage, province_abbreviation, municipality_code)
             names(coverage) = c(tr("anno", change$language), tr("mese", change$language), tr("copertura", change$language))
             coverage
-
         }, options = list(lengthMenu = c(3, 6, 12), pageLength = 3))
         
         output$proveniences <- renderPlotly({
