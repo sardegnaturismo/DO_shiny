@@ -10,7 +10,7 @@ map_bar_province1;Visualizza i dati turistici della provincia;Display
 map_bar_province2;scorrendo in basso la pagina oppure seleziona un <strong>comune</strong> nella mappa;tourism data scrolling down the page or select a <strong>town</strong> in the map
 map_bar_mun1;Visualizza i dati turistici e le strutture ricettive del comune di;Display
 map_bar_mun2;scorrendo in basso la pagina;'s tourism data scrolling down the page
-disclaimer;Nota bene: i dati visualizzati sono relativi al seguente tasso di copertura; Note well: data refers to the following coverage rate
+disclaimer;<strong>Nota bene</strong>: i dati visualizzati sono relativi al seguente tasso di copertura calcolato sui letti delle strutture ricettive; Note well: data refers to the following coverage rate based on the occupancy rate of bed places in hotels and similar accomodation.
 Cagliari;Cagliari;Cagliari's
 Oristano;Oristano;Oristano's
 Nuoro;Nuoro;Nuoro's
