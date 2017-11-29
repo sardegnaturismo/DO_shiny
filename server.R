@@ -208,7 +208,7 @@ shinyServer(function(input, output, session) {
         
         output$provenience_bar <- renderUI({
                 bar_title <- tr("provenience_bar", change$language)
-                p(bar_title)
+                bar_title
         })
         
         output$provenience_filter_button <- renderUI({
@@ -217,7 +217,7 @@ shinyServer(function(input, output, session) {
         
         output$profiling_bar_title <- renderUI({
                 bar_title <- tr("profiling_bar_title", change$language)
-                p(bar_title)
+                bar_title
         })
         
         
@@ -226,7 +226,7 @@ shinyServer(function(input, output, session) {
         })
         
         output$type_bar_title <- renderUI({
-                p()
+                br()
         })
         
         output$type_filter_button <- renderUI({
