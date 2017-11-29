@@ -48,7 +48,7 @@ filter_dataset <- function(dataset, province_abbreviation = NULL, municipality_c
     
   }
   if(!is.null(prov_pie_event)){
-    target_field <- ifelse(names(dataset)[1] == "periodo", "codicenazione", "codiceluogo")
+    target_field <- ifelse("periodo" %in% names(dataset), "codicenazione", "codiceluogo")
     if (prov_pie_event[["pointNumber"]] == 0){
       dataset <- dataset %>% filter(!grepl("^9", dataset[[target_field]]))
       paste(paste("foreigners dataset", nrow(dataset)))
@@ -62,9 +62,9 @@ if(!is.null(nation_bar_ev)){
         print("*** inside filter dataset ***")
         print(paste("lang chosen: ", lang_chosen))
         if(lang_chosen == "en"){
-                target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
+                target_field2 = ifelse("periodo" %in% names(dataset), "descrizione_eng", "descrizioneluogo_eng")
         }else{
-                target_field2 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")          
+                target_field2 = ifelse("periodo" %in% names(dataset), "descrizione", "descrizioneluogo")          
         }
         print(paste("target field 2:", target_field2))
         dataset <- dataset %>% filter(dataset[[target_field2]] == nation_bar_ev[["x"]])
@@ -72,16 +72,16 @@ if(!is.null(nation_bar_ev)){
 }
 if (!is.null(region_bar_ev)){
         if(lang_chosen == "en"){
-                target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione_eng", "descrizioneluogo_eng")
+                target_field3 = ifelse("periodo" %in% names(dataset), "descrizione_eng", "descrizioneluogo_eng")
         }else{
-                target_field3 = ifelse(names(dataset)[1] == "periodo", "descrizione", "descrizioneluogo")
+                target_field3 = ifelse("periodo" %in% names(dataset), "descrizione", "descrizioneluogo")
         }
         print(paste("target field 3:", target_field3))
         dataset <- dataset %>% filter(dataset[[target_field3]] == region_bar_ev[["x"]])    
 }
 
 
-  if(names(dataset)[1] == "regione" && !is.null(profile_pie_event)){
+  if("sesso" %in% names(dataset) && !is.null(profile_pie_event)){
           if (length(unique(dataset$sesso)) != 1){
                   if (profile_pie_event[["pointNumber"]] == 0){
                           #paste("filtering females")
@@ -108,7 +108,7 @@ if (!is.null(region_bar_ev)){
             accomodated_type_chosen = tipo_alloggiato[index]
           }
           print(paste("POST accomodated_type_chosen: ", accomodated_type_chosen))
-          if(names(dataset)[1] == "regione"){
+          if("sesso" %in% names(dataset)){
                   dataset <- dataset %>% filter(dataset[["tipoalloggiato_str"]] == accomodated_type_chosen)
           }
   }  
