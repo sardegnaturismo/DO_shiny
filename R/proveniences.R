@@ -1,5 +1,4 @@
 get_global_proveniences <- function(dataset, province_abbreviation, municipality_code, measure){
-  
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         # italians <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("^999", codicenazione)) %>% filter(periodo == "anno1") 
         # foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(periodo == "anno1")
@@ -14,7 +13,10 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
        
         proveniences <- tryCatch({
                 aggregate(d$tot_arrivi ~ d$descrizione, FUN = sum)},
-                finally = {data.frame(matrix(nrow = 1, ncol = 2))})                
+                error = function(cond) {
+                  message("get_global_proveniences function does not have rows to aggregate ")
+                  data.frame(matrix(nrow = 1, ncol = 2))
+                  })                
         measure = tolower(measure)
         if (!is.null(measure) || measure != "") {
                 if ((measure == 'presenze') || (measure == "presences")){
