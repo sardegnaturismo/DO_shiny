@@ -26,13 +26,13 @@ source("R/layoutBlocks.R")
 source("internazionalization/translation_functions.R")
 
 
-provinces <- readOGR("shapes/Prov2016_rprj.shp", encoding = "UTF-8")
+provinces <- readOGR("shapes/Prov2016_rprj.shp", encoding = "UTF-8", use_iconv = T)
 sardinian_provinces <- subset(provinces, provinces$PROVINCIA %in% c("Sassari", "Nuoro", "Cagliari", "Oristano", "Olbia-Tempio", "Ogliastra",
                                                                     "Medio Campidano", "Carbonia-Iglesias"))
-municipalities <- readOGR("shapes/Com2016_rprj.shp")
-aggregate_movements <- fread("data/agg_ope_line_20xx.csv")
-aggregate_web_data <- fread("data/agg_ope_web.csv", encoding = "UTF-8")
-map_threshold <- fread("data/soglia_map_prov_com_ope.csv")
+municipalities <- readOGR("shapes/Com2016_rprj.shp", encoding = "UTF-8", use_iconv = T)
+aggregate_movements <- read.csv("data/agg_ope_line_20xx.csv", encoding = "UTF-8", stringsAsFactors = F, colClasses = c("codicecomune" = "character", "mese" = "character", "codicenazione" = "character"))
+aggregate_web_data <- read.csv("data/agg_ope_web.csv", encoding = "UTF-8", stringsAsFactors = F, colClasses = c("codicecomune" = "character", "codiceluogo" = "character", "sesso" = "character", "tipoalloggiato" = "character"))
+map_threshold <- read.csv("data/soglia_map_prov_com_ope.csv", encoding = "UTF-8", colClasses = c("codicecomune" = "character", "anno" = "character"))
 structures <- fread("data/struttura_info_ope.csv")
 coverage <- fread("data/copertura_sardegna.csv", colClasses = c("codicecomune" = "character"))
 
@@ -869,6 +869,7 @@ shinyServer(function(input, output, session) {
                 region_ev <- region_bar$ev
                 
                 trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev, region_ev, change$language)
+                print("**** Trends")
                 print(trends)
                 #trend_2014 = filter(trends, anno == 2014) %>% select(., c("mese"))
                 last_years <- tail(unique(trends$anno), n = 3)
