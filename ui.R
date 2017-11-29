@@ -35,8 +35,6 @@ shinyUI(fluidPage(
   div(
           htmlOutput("header", container = tags$h3),
           
-          # HTML("<h3>Sistema interattivo di analisi e visualizzazione dei dati sul movimento turistico della Sardegna 2016 
-          #    (Fonte: <a href='http://operatori.sardegnaturismo.it/it/sired-0'>SIRED</a>)</h3>"), 
           div(
                   class="flags",
                   actionButton(
@@ -54,17 +52,11 @@ shinyUI(fluidPage(
                   
                   
           )
-
-          # tags$img(src="logost.png", class='header_left'),
-          # tags$img(src="logo_ras.png", class='header_right')  
-  ),br(),
+  ), br(),
   
   div(
           uiOutput("radio")         
-          # radioButtons("measure", tr("misura", language),
-          #               c("Arrivi", "Presenze"), selected = "Arrivi")
-          
-  ), br(),
+     ), br(),
   fluidRow(
           id = "page_bar",
        column(
@@ -75,7 +67,6 @@ shinyUI(fluidPage(
        column(
                width = 4,
                uiOutput("map_filter_button")
-               #actionButton("stop_map_filters", "Elimina filtri mappe", class='stop_filter')
        )
 
   ),
@@ -106,17 +97,13 @@ shinyUI(fluidPage(
                   width = 6,
                   class = 'border_map',
                   leafletOutput("structure_map", height = "280")
-                  
-                  
           )
-          
-
   ),
-  div(
+  fluidRow(
           id='pie_bar',
           column(
                   width = 8,
-                  uiOutput("provenience_bar")
+                  htmlOutput("provenience_bar", container = tags$p, class="map_bar")
           ),
           column(
                   width = 4,
@@ -128,7 +115,6 @@ shinyUI(fluidPage(
                 offset = 4,
                 width = 4,
                 plotlyOutput("proveniences",  height = '600px')
-                # verbatimTextOutput("prov_click")
         )),br(), br(), br(),
   fluidRow(
           column(
@@ -155,11 +141,11 @@ shinyUI(fluidPage(
   ),br(), br(), br(),
   
   
-  div(
+  fluidRow(
           id='profiling_bar',
           column(
                   width = 8,
-                  uiOutput("profiling_bar_title")
+                  htmlOutput("profiling_bar_title", container = tags$p, class='map_bar')
           ),
           column(
                   width = 4,
@@ -176,11 +162,11 @@ shinyUI(fluidPage(
                   
           )
   ), br(), br(), br(),
-  div(
+  fluidRow(
           id='type_bar',
           column(
                   width = 8,
-                  uiOutput("type_bar_title")
+                  htmlOutput("type_bar_title", container = tags$p, class='map_bar')
           ),
           column(
                   width = 4,
@@ -202,6 +188,4 @@ shinyUI(fluidPage(
           )
   )
                   
-
-
 ))
