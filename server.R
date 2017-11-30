@@ -745,7 +745,7 @@ shinyServer(function(input, output, session) {
                 
                 
                 plot_title <- tr("distribuzione_per_sesso", change$language)
-                p <- plot_ly(sex_distribution, labels = ~sesso, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'text',
+                p <- plot_ly(sex_distribution, labels = ~sesso, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'percent',
                              text = ~paste(sesso, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE, source = 'sex_pie') %>%
                         layout(title = plot_title, showlegend = T) %>% config(displayModeBar = FALSE, collaborate = FALSE) 
                 
@@ -790,7 +790,7 @@ shinyServer(function(input, output, session) {
                 xform <- list(categoryorder = "array",
                               categoryarray = c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo"), title = "")
                 plot_title <- tr("distribuzione_per_alloggiato", change$language)
-                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
+                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', hoverinfo = 'none', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
                         layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = "")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))               
                 
         })
@@ -819,7 +819,7 @@ shinyServer(function(input, output, session) {
           
                 age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, accomodated_ev, change$language)
                 plot_title <- tr("distribuzione_per_eta", change$language)
-                p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', hoverinfo = 'none', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
                         layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = "")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
         })
         
@@ -893,7 +893,7 @@ shinyServer(function(input, output, session) {
                 
                 
                 plot_title <- tr("andamento_triennio", change$language)
-                p <- plot_ly(trends1, x = ~m1, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers',  text = ~paste("Anno: ", anno)) %>%
+                p <- plot_ly(trends1, x = ~m1, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers',  text = ~paste(mese, anno, "<br>", measure, ":", movimenti ), hoverinfo = 'text') %>%
                         add_trace(data = trends2, x = ~m2, y = ~movimenti, name = paste(y_axix_title, intervallo2), mode = 'lines+markers') %>%
                         add_trace(data = trends3, x = ~m3, y = ~movimenti, name = paste(y_axix_title, intervallo3), mode = 'lines+markers') %>%                        
                         layout(title = plot_title,

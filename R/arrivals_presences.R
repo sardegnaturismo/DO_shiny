@@ -47,6 +47,7 @@ get_presences_by_municipal_code <- function(dataset){
 #dataset, province_abbreviation = NULL, municipality_code = NULL, prov_pie_event = NULL, profile_pie_event = NULL, nation_bar_ev = NULL, region_bar_ev = NULL, accomodated_bar_ev = NULL, lang_chosen = NULL
 
 get_last_three_years <- function(dataset, province_abbreviation, municipality_code, measure, prov_pie_event, nation_bar_ev, region_bar_ev, lang_chosen){
+        dataset <- dataset %>% filter(!grepl("^999$", codicenazione)) %>% filter(!grepl("9999", codicenazione))
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code, prov_pie_event, NULL, nation_bar_ev, region_bar_ev, NULL, lang_chosen)
         mapping <- unique(cbind(dataset$mese, dataset$mesestr_ita))
         mapping_list <- mapping[,2]
