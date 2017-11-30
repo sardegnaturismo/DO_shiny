@@ -125,8 +125,10 @@ shinyServer(function(input, output, session) {
         observeEvent(input$stop_map_filters,
                      {data$clickedProvince <- NULL
                       data$clickedMunicipality <- NULL
-                      province_map$proxy %>% clearGroup("Selected")
-                      })
+                      if (!is.null(province_map$proxy)){
+                          province_map$proxy %>% clearGroup("Selected")  
+                      }})
+        
         observeEvent(input$it, {
                 change$language <- "it"
         })
