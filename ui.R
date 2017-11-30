@@ -28,34 +28,34 @@ shinyUI(fluidPage(
    extendShinyjs(text = "shinyjs.resetProvenienceClick = function() { Shiny.onInputChange('.clientValue-plotly_click-prov_pie', 'null'); }"),
 
   #Top header
+  # div(
+  #         tags$img(src="logost.png", class='header_left'),
+  #         tags$img(src="logo_ras.png", class='header_right'),
+  #         style = "visibility:hidden"
+  # ), p(), br(),
+  # div(
+  #         htmlOutput("header", container = tags$h3),
+  #         
+  #         div(
+  #                 class="flags",
+  #                 actionButton(
+  #                         inputId = "it",
+  #                         class = "btn action_button flag_right",
+  #                         label = img(src = "bandiera-italia_scalata.png")
+  #                 ),
+  #                 
+  #                 actionButton(
+  #                         inputId = "en",
+  #                         class = "btn action_button flag_right", 
+  #                         label = img(src = "english-flag_resized.png")
+  #                 )
+  #         ),
+  #     style = "visibility:hidden"     
+  # ),
+##############################################################
+
   div(
-          tags$img(src="logost.png", class='header_left'),
-          tags$img(src="logo_ras.png", class='header_right')
-  ),p(), br(),
-  div(
-          htmlOutput("header", container = tags$h3),
-          
-          div(
-                  class="flags",
-                  actionButton(
-                          inputId = "it",
-                          class = "btn action_button flag_right",
-                          label = img(src = "bandiera-italia_scalata.png")
-                  ),
-                  
-                  actionButton(
-                          inputId = "en",
-                          class = "btn action_button flag_right", 
-                          label = img(src = "english-flag_resized.png")
-                  )
-                  
-                  
-                  
-          )
-  ), br(),
-  
-  div(
-          uiOutput("radio")         
+       uiOutput("radio")         
      ), br(),
   fluidRow(
           id = "page_bar",
