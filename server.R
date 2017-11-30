@@ -33,7 +33,7 @@ municipalities <- readOGR("shapes/Com2016_rprj.shp", encoding = "UTF-8", use_ico
 aggregate_movements <- read.csv("data/agg_ope_line_20xx.csv", encoding = "UTF-8", stringsAsFactors = F, colClasses = c("codicecomune" = "character", "mese" = "character", "codicenazione" = "character"))
 aggregate_web_data <- read.csv("data/agg_ope_web.csv", encoding = "UTF-8", stringsAsFactors = F, colClasses = c("codicecomune" = "character", "codiceluogo" = "character", "sesso" = "character", "tipoalloggiato" = "character"))
 map_threshold <- read.csv("data/soglia_map_prov_com_ope.csv", encoding = "UTF-8", colClasses = c("codicecomune" = "character", "anno" = "character"))
-structures <- fread("data/struttura_info_ope.csv")
+structures <- read.csv("data/struttura_info_ope.csv", stringsAsFactors = F, colClasses = c("id_struttura" = "character", "cod_com" = "character", "lat" = "character", "lon" = "character"))
 coverage <- fread("data/copertura_sardegna.csv", colClasses = c("codicecomune" = "character"))
 
 ### load translation file ###
@@ -129,12 +129,6 @@ shinyServer(function(input, output, session) {
                       })
         observeEvent(input$it, {
                 change$language <- "it"
-                # nations <- aggregate_movements$descrizione
-                # regions <- aggregate_web_data$descrizioneluogo
-                # aggregate_movements$descrizione <- translate_vector(nations, change$language)
-                # aggregate_web_data$descrizioneluogo <- translate_vector(regions, change$language)
-                
-                
         })
         
         observe({
@@ -151,11 +145,6 @@ shinyServer(function(input, output, session) {
         
         observeEvent(input$en, {
                 change$language <- "en"
-                # nations <- aggregate_movements$descrizione
-                # regions <- aggregate_web_data$descrizioneluogo
-                # aggregate_movements$descrizione <- translate_vector(nations, change$language)
-                # aggregate_web_data$descrizioneluogo <- translate_vector(regions, change$language)
-                
         })
         
         observe({prov_pie$ev <- event_data("plotly_click", source = 'prov_pie')})
@@ -491,18 +480,6 @@ shinyServer(function(input, output, session) {
                 #d <- event_data("plotly_click", source = 'prov_pie' )
                 d <- prov_pie$ev
                 print(paste("d assigned: ", d))
-                # if (prov_pie$reset){
-                #         print("stop pie filter inside provenience")
-                #         d = NULL
-                #         prov_pie$reset = FALSE
-                # }else{
-                #         d <- event_data("plotly_click", source = 'prov_pie')
-                # 
-                #         print(paste("d assigned: ", d))
-                # }
-
-                
-                
                 print("Click event")
                 print(d)
                 print(class(d))
@@ -867,7 +844,6 @@ shinyServer(function(input, output, session) {
                 ### plotly events from nations and regions bar chart
                 nation_ev <- nation_bar$ev
                 region_ev <- region_bar$ev
-                
                 trends <- get_last_three_years(aggregate_movements, province_abbreviation, municipality_code, measure, ev, nation_ev, region_ev, change$language)
                 print("**** Trends")
                 print(trends)
@@ -915,7 +891,7 @@ shinyServer(function(input, output, session) {
                 
                 
                 plot_title <- tr("andamento_triennio", change$language)
-                p <- plot_ly(trends1, x = ~m1, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers') %>%
+                p <- plot_ly(trends1, x = ~m1, y = ~movimenti, name = paste(y_axix_title, intervallo1), type = 'scatter', mode = 'lines+markers',  text = ~paste("Anno: ", anno)) %>%
                         add_trace(data = trends2, x = ~m2, y = ~movimenti, name = paste(y_axix_title, intervallo2), mode = 'lines+markers') %>%
                         add_trace(data = trends3, x = ~m3, y = ~movimenti, name = paste(y_axix_title, intervallo3), mode = 'lines+markers') %>%                        
                         layout(title = plot_title,
