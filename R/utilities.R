@@ -145,3 +145,11 @@ get_language <- function(language = "it"){
 
 language = get_language()
 
+
+get_month_range <- function(dataset = aggregate_movements){
+  x <- filter(dataset, periodo == "anno1")
+  mapping <- unique(cbind(x$mese, x$mesestr_ita, x$anno_rif))
+  mapping <- data.frame(mapping)
+  names(mapping) <- c("mese", "mesestr", "anno")
+  mapping <- mapping[order(mapping$anno, mapping$mese, decreasing = F), ]
+}
