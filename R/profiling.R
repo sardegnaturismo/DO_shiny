@@ -23,9 +23,16 @@ get_accomodated_type <- function(dataset, province_abbreviation, municipality_co
         names(accomodated_type) <- c("tipo_alloggiato", "arrivi")
         accomodated_type <- accomodated_type %>% filter(!(tipo_alloggiato == ''))
         accomodated_type = accomodated_type[order(accomodated_type$arrivi, decreasing = T), ]
+        accomodated_type$arrivi = sapply(accomodated_type$arrivi, FUN = function(x){
+          if ((!is.null(x) & !is.null(sum(x))) & sum(x) != 0){
+              tot <- sum(accomodated_type$arrivi)
+              round(x*100/tot)
+        }else{
+            0
+          }
+        })
+        accomodated_type
 
-        
- 
 }
 
 get_age_range <- function(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev, accomodated_bar_ev, lang_chosen){
@@ -42,6 +49,14 @@ get_age_range <- function(dataset, province_abbreviation, municipality_code, pro
         result <- age_range %>% mutate(fasciaeta = gsub("eta_", "", fasciaeta) %>% gsub("65\\+", ">65", .))
         result$fasciaeta = factor(x = result$fasciaeta, levels = result$fasciaeta)
         names(result) <- c("eta", "arrivi")
+        result$arrivi = sapply(result$arrivi, FUN = function(x){
+          if ((!is.null(x) & !is.null(sum(x))) & sum(x) != 0){
+            tot <- sum(result$arrivi)
+            round(x*100/tot)
+          }else{
+            0
+          }
+        })
         result
    
 }

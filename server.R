@@ -787,11 +787,12 @@ shinyServer(function(input, output, session) {
 
                 #c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo")
                 #accomodated_type$tipo_alloggiato
+                print(accomodated_type)
                 xform <- list(categoryorder = "array",
                               categoryarray = c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo"), title = "")
                 plot_title <- tr("distribuzione_per_alloggiato", change$language)
-                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', hoverinfo = 'none', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
-                        layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = "")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))               
+                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', text = ~paste(tipo_alloggiato, ", ", arrivi, "%", sep = ''),  hoverinfo = 'text', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
+                        layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = "(%)")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))               
                 
         })
         
@@ -818,9 +819,10 @@ shinyServer(function(input, output, session) {
                 
           
                 age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, accomodated_ev, change$language)
+                print(age_range)
                 plot_title <- tr("distribuzione_per_eta", change$language)
-                p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, type = 'bar', hoverinfo = 'none', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
-                        layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = "")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
+                p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, text = ~paste(eta, ", ", arrivi, "%", sep=''), hoverinfo = 'text', type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                        layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = "(%)")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
         })
         
         
