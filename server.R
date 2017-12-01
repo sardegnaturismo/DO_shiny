@@ -400,12 +400,12 @@ shinyServer(function(input, output, session) {
                         
                         #sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
                         r <- leaflet(municipal_structures)  %>%
-                          setView(lng=longitude, lat=latitude, zoom=8) %>%
+                          setView(lng=longitude, lat=latitude, zoom=11) %>%
                           addTiles() %>%
                           addMarkers(~lon, ~lat, popup = ~build_marker_popup(denominazione, tipologia, classificazione, mesi_apertura, tot_letti, change$language), label = ~as.character(denominazione))
                       }else{
                           r <- leaflet(municipal_structures)  %>%
-                          setView(lng=longitude, lat=latitude, zoom=8) %>%
+                          setView(lng=longitude, lat=latitude, zoom=11) %>%
                           addTiles()
                         
                       }
@@ -453,7 +453,9 @@ shinyServer(function(input, output, session) {
             coverage <- get_coverage(coverage, province_abbreviation, municipality_code)
             names(coverage) = c(tr("anno", change$language), tr("mese", change$language), tr("copertura", change$language))
             coverage
-        }, options = list(lengthMenu = c(3, 6, 12), pageLength = 3))
+        }, options = list(lengthMenu = c(3, 6, 12), pageLength = 3, columnDefs = list(list(targets = "_all", searchable = FALSE)), 
+                          autoWidth = FALSE, language = list(search = paste(tr("cerca", change$language)), lengthMenu = tr("mostra_elementi", change$language),
+                          info = "", paginate = list("next" = tr("successivo", change$language), previous = tr("precedente", change$language)))))
         
         output$proveniences <- renderPlotly({
                 province_abbreviation <- NULL
@@ -829,6 +831,7 @@ shinyServer(function(input, output, session) {
         output$trend_comparison <- renderPlotly({
                 province_abbreviation <- NULL
                 municipality_code <- NULL
+                month_range <- get_month_range(aggregate_movements)
                 
                 selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
                 province_abbreviation <- selections[[1]]
@@ -884,14 +887,16 @@ shinyServer(function(input, output, session) {
                 
                 month_list <- list(m1, m2, m3)
                 reference_month_list <- get_longest_vector(month_list)
+                mlist <- factor(month_range$mesestr, levels = month_range$mesestr)
+                print("*** mlist ***")
+                print(mlist)
+                reference_month_list <- translate_vector(mlist, change$language)
                 
                 print(paste("Lunghezza mesi: ", length(reference_month_list)))
                 #print(m)
                 ### Layout params              
                 y_axix_title <- measure
                 xform <- list(categoryorder = "array", categoryarray = reference_month_list, title = "", showticklabels = TRUE)
-                
-                
                 
                 
                 plot_title <- tr("andamento_triennio", change$language)
