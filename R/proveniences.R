@@ -108,7 +108,7 @@ get_provenience_by_nation <- function(dataset, province_abbreviation, municipali
 
 get_provenience_by_region <- function(dataset, province_abbreviation, municipality_code, measure){
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)  
-        italians_all <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(periodo == "anno1")
+        italians_all <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("9999", codicenazione)) %>% filter(periodo == "anno1")
         italians <- italians_all %>% filter(!grepl("Italia", descrizione)) %>% filter(!grepl("Estero", descrizione))
         proveniences <- tryCatch({
                 aggregate(italians$tot_arrivi ~ italians$descrizione, FUN = sum)},
