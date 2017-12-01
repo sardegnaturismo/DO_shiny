@@ -5,9 +5,13 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
 
         italians <- dataset %>% filter(grepl("^999$", codicenazione)) %>% filter(periodo == "anno1")
         foreigners <- dataset %>% filter(grepl("9999", codicenazione)) %>% filter(periodo == "anno1")
+        if (nrow(italians) > 0){
+          italians$descrizione = "Italia"
+        }
+        if (nrow(foreigners) > 0){
+          foreigners$descrizione = "Estero"
+        }
         
-        italians$descrizione = "Italia"
-        foreigners$descrizione = "Estero"
         d <- rbind(italians, foreigners)
         
        
