@@ -55,11 +55,13 @@ shinyServer(function(input, output, session) {
         province_map_clicked <- reactiveValues(selected = NULL)
         province_map <- reactiveValues(proxy = NULL)
         municipality_map_clicked <- reactiveValues(selected = NULL)
-        
+        map <- reactiveValues(selected_params = NULL)
+        bcc <- reactiveVal(value = 0)
+
         ##### Observers ###################
         observeEvent(input$province_map_shape_click,
                      {data$clickedProvince <- input$province_map_shape_click
-                      
+
                      ####### highlight selection ####
                      #define leaflet proxy for second regional level map
                        click <-input$province_map_shape_click
@@ -71,16 +73,6 @@ shinyServer(function(input, output, session) {
                        province_map$proxy %>% clearGroup("Selected")
                        
                      }   
-                     
-                     
-                     # proxy %>% addPolygons(data = selected_province,
-                     #                         fillOpacity = 1,
-                     #                         fillColor = "transparent",
-                     #                         group = "Selected",
-                     #                         weight = 5,
-                     #                         color = "black",
-                     #                         stroke = T,
-                     #                         layerId = selected_province$COD_PRO)
                      
                      province_map$proxy %>% addPolylines(data = selected_province, layerId = selected_province$COD_PRO, color = "black", weight = 4, group = "Selected")
                      province_map_clicked$selected <- selected_province$COD_PRO 
@@ -103,23 +95,8 @@ shinyServer(function(input, output, session) {
                        proxy  %>% clearGroup("Selected")
 
                      }
-                     # proxy %>% addPolygons(data = selected_municipality,
-                     #                       fillOpacity = 1,
-                     #                       fillColor = "transparent",
-                     #                       group = "Selected",
-                     #                       weight = 3,
-                     #                       color = "black",
-                     #                       stroke = T,
-                     #                       layerId = selected_municipality$PRO_COM)
-                     
                      proxy %>% addPolylines(data = selected_municipality, layerId = selected_municipality, color = "black", weight = 4, group = "Selected")
                      municipality_map_clicked$selected <- selected_municipality$PRO_COM
-                     
-                     
-                     
-                     
-                     
-                     
                      })
         
         observeEvent(input$stop_map_filters,
@@ -135,8 +112,6 @@ shinyServer(function(input, output, session) {
         
         observe({
           query <- parseQueryString(session$clientData$url_search)
-          print("*** Query ****")
-          print(query)
           if ((!is.null(query$language)) && (query$language == "en")){
             change$language <- "en"
           }else{
@@ -149,14 +124,25 @@ shinyServer(function(input, output, session) {
                 change$language <- "en"
         })
         
+        observe({map$selected_params <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)})
         observe({prov_pie$ev <- event_data("plotly_click", source = 'prov_pie')})
         observe({sex_pie$ev <- event_data("plotly_click", source = "sex_pie" )})
         observe({nation_bar$ev <- event_data("plotly_click", source = "nation_bar")})
-        # observe({nation_bar$dbev <- event_data("plotly_doubleclick", source = "nation_bar")})
         observe({region_bar$ev <- event_data("plotly_click", source = "region_bar")})
-        # observe({region_bar$dbev <- event_data("plotly_doubleclick", source = "region_bar")})        
         observe({accomodated_bar$ev <- event_data("plotly_click", source = "accomodated_bar")})
         observe({age_bar$ev <- event_data("plotly_click", source = "age_bar")})
+        observe({
+                   shinyjs::onclick("dett_button", function(){
+                           if(bcc() == 0){
+                                   bcc(1)
+                                   html("dett_button", tr("chiudi", change$language))
+                           }else{
+                                   bcc(0)
+                                   html("dett_button", tr("dettagli", change$language))                                   
+                           }
+                            
+                   })
+                })
                  
         observeEvent(input$stop_provenience_filter, {
                 prov_pie$reset <- TRUE
@@ -179,16 +165,12 @@ shinyServer(function(input, output, session) {
            age_bar$ev <- NULL                
         })
 
-        
-
         #################################################
-        
         #### UI multilingual element generation ##### 
         output$header <- renderText({
                 generateHeaderTitle(change$language)
         })
-        
-        
+
         output$radio <- renderUI({
                 generateRadio(change$language)
         })
@@ -210,8 +192,7 @@ shinyServer(function(input, output, session) {
                 bar_title <- tr("profiling_bar_title", change$language)
                 bar_title
         })
-        
-        
+
         output$profiling_filter_button <- renderUI({
                 generateFilterButton(change$language, "stop_profiling_filter", "elimina_filtri_profilazione")
         })
@@ -225,12 +206,11 @@ shinyServer(function(input, output, session) {
         })
         
         output$details_button <- renderUI({
-          tags$button(tr("dettagli", change$language), class="btn btn-info", `data-toggle`="collapse", `data-target`="#demo")
+          tags$button(id="dett_button", tr("dettagli", change$language), class="btn btn-info", `data-toggle`="collapse", `data-target`="#demo")
         })
          
         
         output$province_map <- renderLeaflet({
-                
                 measure = input$measure
                 print(paste("measure: ", measure))
                 measure_selected = get_arrivals(aggregate_movements)
@@ -288,8 +268,6 @@ shinyServer(function(input, output, session) {
                         }
   
                 }
-                
-
                 out <- paste(out, "<p class='disclaimer'>", tr("disclaimer", change$language), "</p>")
                 out
         })
@@ -312,12 +290,7 @@ shinyServer(function(input, output, session) {
                         print(input$province_map_shape_click)
                         
                         sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
-                        # print("Radio***")
                         measure = input$measure
-                        # print(paste("measure: ", measure))
-                        # print("session")
-                        # print(session$input[["measure"]])
-                        # 
                         measure_selected = get_arrivals_by_municipal_code(aggregate_movements)
                         legend_title = tr("numero_arrivi", change$language)
                         if ((measure == "Presenze") || (measure == "Presences")){
@@ -335,15 +308,9 @@ shinyServer(function(input, output, session) {
                         })
                         
                         print(measure_selected)
-                        
-                        # pal <- colorNumeric("Purples", 
-                        #                     domain = sardinian_municipalities$measure)
-                        
                         pal <- colorNumeric("Blues", domain = sardinian_municipalities$measure)
                         
                         print(sardinian_municipalities$measure)
-                        #~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area)
-                        
                         r <- leaflet() %>%
                                 setView(lng=longitude, lat=latitude, zoom=8) %>%
                                 addTiles() %>%
@@ -358,18 +325,12 @@ shinyServer(function(input, output, session) {
         })
         
         output$structure_map <- renderLeaflet({
-                print("Inside structure ****")
-                print("****Clicked Municipality***")
-                print(data$clickedMunicipality)
-  #################              
                 r <- NULL
                 allowed_municipalities <- map_threshold %>% mutate(codicecomune = gsub("^0", "", codicecomune)) %>% filter(esito_unita == 1)
                 allowed_municipalities_code <- allowed_municipalities %>% select(codicecomune)
                 allowed_municipalities_code <- as.integer(allowed_municipalities_code[[1]])
                 struct <- structures %>% mutate(cod_com = gsub("^0", "", cod_com))
 
-                # province_code <- input$province_map_shape_click[["id"]]
-                # municipal_code <- input$municipalities_map_shape_click[["id"]]
                 province_code <- data$clickedProvince[["id"]]
                 municipal_code <- data$clickedMunicipality[["id"]]
                 
@@ -378,9 +339,7 @@ shinyServer(function(input, output, session) {
                         province_symbol <- sardinian_provinces$SIGLA[sardinian_provinces$COD_PRO == province_code]
                         
                         print("**** municipal parameters *****")
-                        #print(province_symbol)
-                        # latitude <- input$municipalities_map_shape_click[["lat"]] 
-                        # longitude <- input$municipalities_map_shape_click[["lng"]]
+   
                         latitude <- data$clickedMunicipality[["lat"]] 
                         longitude <- data$clickedMunicipality[["lng"]]
                         
@@ -398,7 +357,6 @@ shinyServer(function(input, output, session) {
                         
                         m = municipal_structures
                         
-                        #sardinian_municipalities <- subset(municipalities, (municipalities$COD_PRO %in% c(province_code)) & (municipalities$PRO_COM %in% allowed_municipalities_code))
                         r <- leaflet(municipal_structures)  %>%
                           setView(lng=longitude, lat=latitude, zoom=11) %>%
                           addTiles() %>%
@@ -407,17 +365,10 @@ shinyServer(function(input, output, session) {
                           r <- leaflet(municipal_structures)  %>%
                           setView(lng=longitude, lat=latitude, zoom=11) %>%
                           addTiles()
-                        
                       }
                       r  
-
-                                # addPolygons(color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.3,
-                                #             fillColor = ~colorQuantile("Purples", SHAPE_Area)(SHAPE_Area),
-                                #             highlightOptions = highlightOptions(color = "white", weight = 2,
-                                #                                                 bringToFront = TRUE), label = sardinian_municipalities$COMUNE)
                 }
                 r
-             #########   
         })
         
         
@@ -425,7 +376,7 @@ shinyServer(function(input, output, session) {
           province_abbreviation <- NULL
           municipality_code <- NULL
           
-          selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+          selections <- map$selected_params
           print("current coverage selections")
           print(selections)
           province_abbreviation <- selections[[1]]
@@ -447,7 +398,8 @@ shinyServer(function(input, output, session) {
         output$coverage <- renderDataTable({
             province_abbreviation <- NULL
             municipality_code <- NULL
-            selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+            #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+            selections <- map$selected_params
             province_abbreviation <- selections[[1]]
             municipality_code <- selections[[2]]
             coverage <- get_coverage(coverage, province_abbreviation, municipality_code)
@@ -461,7 +413,8 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
 
@@ -535,28 +488,12 @@ shinyServer(function(input, output, session) {
                                   persistent = TRUE)
         })
         
-        
-        # output$prov_click <- renderPrint({
-        #         d <- event_data("plotly_selected")
-        #         if (is.null(d)) "Click events appear here (double-click to clear)" else d
-        # })
-        
         output$prov_by_nation <- renderPlotly({
-############################
-                # d <- prov_pie$ev
-                # if (!is.null(d) && d[["pointNumber"]] == 1){
-                #         shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
-                #         shinyjs::show("prov_by_region", anim = T, animType = "fade")
-                # }else if (!is.null(d) && d[["pointNumber"]] == 0){
-                #         shinyjs::hide("prov_by_region", anim = T, animType = "fade")
-                #         shinyjs::show("prov_by_nation", anim = T, animType = "fade")
-                # } 
-###################################################                
-
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
@@ -567,13 +504,10 @@ shinyServer(function(input, output, session) {
                   measure = input$measure
                 }
                 print(paste("measure inside prov by nation: ", measure))
-          ##################
+                ##################
                 provenience_by_nation <- get_provenience_by_nation(aggregate_movements, province_abbreviation, municipality_code, measure)
                 plot_title <- tr("distribuzione_per_stato", change$language)
                 y_axis_title <- measure
-                
-                
-            
                 ### axis params ###
                 f2 <- list(
                   family = "Old Standard TT, serif",
@@ -587,14 +521,10 @@ shinyServer(function(input, output, session) {
                   tickfont = f2,
                   exponentformat = "E"
                 )
-               m <- list(b=110)
-                
-                
-                
-                ###################
+                m <- list(b=110)
+                ####################
                if (change$language == "en"){
                  provenience_by_nation$nazione <- translate_vector(provenience_by_nation$nazione, change$language)
-                 
                }
                 xform <- list(categoryorder = "array",
                               categoryarray = provenience_by_nation$nazione, title = "", tickfont = list(size = 9), tickangle = 35)
@@ -648,7 +578,8 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
@@ -661,15 +592,6 @@ shinyServer(function(input, output, session) {
           
                 print(paste("measure inside prov by region: ", measure))
 
-                
-
-                
-                # if (change$language == "en"){
-                #   regions <- aggregate_movements$descrizione
-                #   aggregate_movements$descrizione <- translate_vector(regions, change$language)
-                # }
-                
-                
                 prov_by_region <- get_provenience_by_region(aggregate_movements, province_abbreviation, municipality_code, measure)
                 
                 if (change$language == "en"){
@@ -718,7 +640,8 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
@@ -730,6 +653,7 @@ shinyServer(function(input, output, session) {
                 region_ev <- region_bar$ev
                 
                 sex_distribution <- get_sex(aggregate_web_data, province_abbreviation, municipality_code, ev, nation_ev, region_ev, change$language)
+                sex_distribution <- sex_distribution %>% mutate(sesso = ifelse(sesso == "M", tr("maschi", change$language), tr("femmine", change$language)))
                 
                 
                 ### Color selection ####
@@ -758,7 +682,8 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
           
@@ -803,7 +728,8 @@ shinyServer(function(input, output, session) {
                 province_abbreviation <- NULL
                 municipality_code <- NULL
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
           
@@ -833,7 +759,8 @@ shinyServer(function(input, output, session) {
                 municipality_code <- NULL
                 month_range <- get_month_range(aggregate_movements)
                 
-                selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                #selections <- get_map_selections(data$clickedProvince[["id"]], data$clickedMunicipality[["id"]], sardinian_provinces)
+                selections <- map$selected_params
                 province_abbreviation <- selections[[1]]
                 municipality_code <- selections[[2]]
                 
