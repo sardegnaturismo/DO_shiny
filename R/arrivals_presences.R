@@ -54,7 +54,12 @@ get_last_three_years <- function(dataset, province_abbreviation, municipality_co
         names(mapping_list) <- mapping[,1]
         measure = tolower(measure)
         # res <- aggregate(dataset$tot_arrivi ~ dataset$mese + dataset$anno_rif, FUN = sum)
-        res <- aggregate(dataset$tot_arrivi ~ dataset$periodo + dataset$mese + dataset$anno_rif + dataset$periodo_str, FUN = sum)
+        
+        res <- tryCatch({
+                aggregate(dataset$tot_arrivi ~ dataset$periodo + dataset$mese + dataset$anno_rif + dataset$periodo_str, FUN = sum)},
+                error = function(cond){
+                                message("get_provenience_by_nation function does not have rows to aggregate ")
+                                data.frame(matrix(nrow = 1, ncol = 2))}) 
         if (!is.null(measure) || measure != "") {
           if ((measure == 'presenze') || (measure == "presences")){
             res <- aggregate(dataset$tot_presenze ~ dataset$periodo + dataset$mese + dataset$anno_rif + dataset$periodo_str, FUN = sum)
