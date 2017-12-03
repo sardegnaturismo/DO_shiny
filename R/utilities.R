@@ -104,8 +104,14 @@ if (!is.null(region_bar_ev)){
             print("tipo alloggiato:")
             print(tipo_alloggiato)
             accomodated_type = translate_vector(tipo_alloggiato, lang_chosen)
-            index = which(accomodated_type == accomodated_type_chosen)
-            accomodated_type_chosen = tipo_alloggiato[index]
+            if (accomodated_type_chosen %in% accomodated_type){
+                index = which(accomodated_type == accomodated_type_chosen)
+                accomodated_type_chosen = tipo_alloggiato[index]
+            }else{
+                    accomodated_type_chosen = ""
+            }
+
+
           }
           print(paste("POST accomodated_type_chosen: ", accomodated_type_chosen))
           if("sesso" %in% names(dataset)){
