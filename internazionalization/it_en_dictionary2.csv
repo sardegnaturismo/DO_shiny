@@ -153,3 +153,6 @@ successivo;Successivo;Next
 precedente;Precedente;Previous
 maschi;Maschi;Males
 femmine;Femmine;Females
+diagramma_sesso_nd;Dato sulla distribuzione per sesso non disponibile;Sex distribution not available
+diagramma_tipoalloggiato_nd;Dato sulla distribuzione del tipo alloggiato non disponibile;Accomodated type distribution not available
+diagramma_agerange_nd; Dato sulla distribuzione delle fasce di età non disponibile;Age range distribution not available
