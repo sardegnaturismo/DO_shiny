@@ -37,7 +37,6 @@ get_accomodated_type <- function(dataset, province_abbreviation, municipality_co
 }
 
 get_age_range <- function(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev, accomodated_bar_ev, lang_chosen){
-        #browser()
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code, prov_pie_event, profile_pie_event, nation_bar_ev, region_bar_ev, accomodated_bar_ev, lang_chosen)        
         dd <- dataset  %>% 
                 filter(!(fasciaeta == "ND"))

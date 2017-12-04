@@ -14,19 +14,26 @@ get_global_proveniences <- function(dataset, province_abbreviation, municipality
         
         d <- rbind(italians, foreigners)
         
-       
+        dependent_variable <- d$tot_arrivi
+        measure = tolower(measure)
+        if (!is.null(measure) || measure != "") {
+                if ((measure == 'presenze') || (measure == "presences")){
+                        dependent_variable <- d$tot_presenze
+                }
+        }
+
         proveniences <- tryCatch({
-                aggregate(d$tot_arrivi ~ d$descrizione, FUN = sum)},
+                aggregate(dependent_variable ~ d$descrizione, FUN = sum)},
                 error = function(cond) {
                   message("get_global_proveniences function does not have rows to aggregate ")
                   data.frame(matrix(nrow = 1, ncol = 2))
                   })                
-        measure = tolower(measure)
-        if (!is.null(measure) || measure != "") {
-                if ((measure == 'presenze') || (measure == "presences")){
-                        proveniences <- aggregate(d$tot_presenze ~ d$descrizione, FUN = sum)
-                }
-        }
+        # measure = tolower(measure)
+        # if (!is.null(measure) || measure != "") {
+        #         if ((measure == 'presenze') || (measure == "presences")){
+        #                 proveniences <- aggregate(d$tot_presenze ~ d$descrizione, FUN = sum)
+        #         }
+        # }
         names(proveniences) = c("provenienza", "movimenti")
         print(proveniences)
         proveniences
@@ -95,18 +102,25 @@ get_coverage <- function(dataset, province_abbreviation = NULL, municipality_cod
 get_provenience_by_nation <- function(dataset, province_abbreviation, municipality_code, measure){
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)
         foreigners <- dataset %>% filter(!grepl("^9", codicenazione)) %>% filter(periodo == "anno1")
+        dependent_variable <- foreigners$tot_arrivi
+        measure = tolower(measure)
+        if (!is.null(measure) || measure != "") {
+                if ((measure == 'presenze') || (measure == "presences")){
+                        dependent_variable <- foreigners$tot_presenze
+                }
+        }
         proveniences <- tryCatch({
-                aggregate(foreigners$tot_arrivi ~ foreigners$descrizione, FUN = sum)},
+                aggregate(dependent_variable ~ foreigners$descrizione, FUN = sum)},
                 error = function(cond) {
                         message("get_provenience_by_nation function does not have rows to aggregate ")
                         data.frame(matrix(nrow = 1, ncol = 2))
                 })                
-        measure = tolower(measure)
-        if (!is.null(measure) || measure != "") {
-          if ((measure == 'presenze') || (measure == "presences")){
-            proveniences <- aggregate(foreigners$tot_presenze ~ foreigners$descrizione, FUN = sum)
-          }
-        }
+        # measure = tolower(measure)
+        # if (!is.null(measure) || measure != "") {
+        #   if ((measure == 'presenze') || (measure == "presences")){
+        #     proveniences <- aggregate(foreigners$tot_presenze ~ foreigners$descrizione, FUN = sum)
+        #   }
+        # }
         names(proveniences) = c("nazione", "movimenti")
         proveniences <- proveniences[order(proveniences$movimenti, decreasing = T), ]
         
@@ -117,18 +131,25 @@ get_provenience_by_region <- function(dataset, province_abbreviation, municipali
         dataset <- filter_dataset(dataset, province_abbreviation, municipality_code)  
         italians_all <- dataset %>% filter(grepl("^9", codicenazione)) %>% filter(!grepl("9999", codicenazione)) %>% filter(periodo == "anno1")
         italians <- italians_all %>% filter(!grepl("Italia", descrizione)) %>% filter(!grepl("Estero", descrizione))
+        
+        dependent_variable <- italians$tot_arrivi
+        if (!is.null(measure) || measure != "") {
+                if ((measure == 'presenze') || (measure == "presences")){
+                        dependent_variable <- italians$tot_presenze
+                }
+        }
         proveniences <- tryCatch({
-                aggregate(italians$tot_arrivi ~ italians$descrizione, FUN = sum)},
+                aggregate(dependent_variable ~ italians$descrizione, FUN = sum)},
                 error = function(cond) {
                         message("get_provenience_by_region function does not have rows to aggregate ")
                         data.frame(matrix(nrow = 1, ncol = 2))
                 })                        
-        measure = tolower(measure)
-        if (!is.null(measure) || measure != "") {
-          if ((measure == 'presenze') || (measure == "presences")){
-            proveniences <- aggregate(italians$tot_presenze ~ italians$descrizione, FUN = sum)
-          }
-        }
+        # measure = tolower(measure)
+        # if (!is.null(measure) || measure != "") {
+        #   if ((measure == 'presenze') || (measure == "presences")){
+        #     proveniences <- aggregate(italians$tot_presenze ~ italians$descrizione, FUN = sum)
+        #   }
+        # }
         names(proveniences) = c("regione", "movimenti")
         proveniences <- proveniences[order(proveniences$movimenti, decreasing = T), ]
         
