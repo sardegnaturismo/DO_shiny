@@ -150,8 +150,10 @@ shinyServer(function(input, output, session) {
                 nation_bar$ev <- NULL
                 region_bar$ev <- NULL
                 js$resetProvenienceClick()
-                shinyjs::show("prov_by_nation", anim = TRUE, animType = "fade")
-                shinyjs::show("prov_by_region", anim = TRUE, animType = "fade")
+                js$resetProvByNationClick()
+                js$resetProvByRegionClick()
+                shinyjs::show("prov_by_nation", anim = TRUE)
+                shinyjs::show("prov_by_region", anim = TRUE)
 
         })
         observeEvent(input$stop_profiling_filter, {
@@ -456,26 +458,27 @@ shinyServer(function(input, output, session) {
                 if (is.null(d) && !is.null(nation_bar$ev)){
                    region_bar$ev <- NULL        
                    colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
-                   shinyjs::hide("prov_by_region", anim = T, animType = "fade")
+                   shinyjs::hide("prov_by_region", anim = T)
                 }else if (is.null(d) && !is.null(region_bar$ev)){
                    nation_bar$ev <- NULL        
                    colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
-                   shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
+                   shinyjs::hide("prov_by_nation", anim = T)
                 }else if ((!is.null(d) && d[["pointNumber"]] == 0) || ((!is.null(d) && d[["pointNumber"]] == 0) && (!is.null(region_bar$ev)))){ ##### Estero ####
-                        # js$resetProvByRegionClick()
+                        js$resetProvByRegionClick()
                         # print("***********************************sono all'estero ****")
                         region_bar$ev <- NULL
                         colors = c('rgb(255, 127, 14)', 'rgb(220, 220, 220)')
-                        shinyjs::hide("prov_by_region", anim = T, animType = "fade")
-                        shinyjs::show("prov_by_nation", anim = T, animType = "fade")
+                        shinyjs::hide("prov_by_region", anim = T)
+                        shinyjs::show("prov_by_nation", anim = T)
                 }else if ((!is.null(d) && d[["pointNumber"]] == 1) || ((!is.null(d) && d[["pointNumber"]] == 1) && (!is.null(nation_bar$ev)))){ #### Italia #####
-                        # js$resetProvByNationClick()
+                        js$resetProvByNationClick()
+                        #js$resetProvByNationClick()
                         # print("***********************************sono in italia ****")
                         
                         nation_bar$ev <- NULL
                         colors = c('rgb(220, 220, 220)', 'rgb(31, 119, 180)')
-                        shinyjs::hide("prov_by_nation", anim = T, animType = "fade")
-                        shinyjs::show("prov_by_region", anim = T, animType = "fade")
+                        shinyjs::hide("prov_by_nation", anim = T)
+                        shinyjs::show("prov_by_region", anim = T)
                         
                 }
                 
@@ -521,7 +524,7 @@ shinyServer(function(input, output, session) {
                   tickfont = f2,
                   exponentformat = "E"
                 )
-                m <- list(b=110)
+                m <- list(b=120)
                 ####################
                if (change$language == "en"){
                  provenience_by_nation$nazione <- translate_vector(provenience_by_nation$nazione, change$language)
@@ -548,7 +551,8 @@ shinyServer(function(input, output, session) {
                      color_set[nation_chosen] = base_color
                 }
                 
-                onevent("dblclick", "provenience_by_nation", shinyjs::show("prov_by_region")) 
+                #onevent("dblclick", "provenience_by_nation", shinyjs::show("prov_by_region")) 
+                
                 # # print("double click ****")
                 # print(nation_bar$dbev)
                 # if (!is.null(nation_bar$dbev)){
@@ -618,7 +622,7 @@ shinyServer(function(input, output, session) {
                 }
                 
                 
-                onevent("dblclick", "provenience_by_region", shinyjs::show("prov_by_nation"))
+                #onevent("dblclick", "provenience_by_region", shinyjs::show("prov_by_nation"))
                 
                 plot_title <- tr("distribuzione_per_regione", change$language)
                 y_axix_title <- measure
@@ -628,9 +632,10 @@ shinyServer(function(input, output, session) {
                 
                 xform <- list(categoryorder = "array",
                               categoryarray = prov_by_region$regione, title = "", tickfont = list(size = 9), tickangle = 35)
+                m <- list(b=120)
                 ###cool color  marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)' 
                 p <- plot_ly(data = prov_by_region, x = ~regione, y = ~movimenti, type = 'bar', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = 'region_bar') %>%
-                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axix_title, tickfont = list(size = 9))) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
+                        layout(title = plot_title, xaxis = xform, yaxis = list(title = y_axix_title, tickfont = list(size = 9)), margin = m) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
                 
         })
         
@@ -669,11 +674,23 @@ shinyServer(function(input, output, session) {
                 }
                 
                 
-                
-                plot_title <- tr("distribuzione_per_sesso", change$language)
-                p <- plot_ly(sex_distribution, labels = ~sesso, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'percent',
-                             text = ~paste(sesso, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE, source = 'sex_pie') %>%
-                        layout(title = plot_title, showlegend = T) %>% config(displayModeBar = FALSE, collaborate = FALSE) 
+                if (nrow(sex_distribution) == 0 | all(is.na(sex_distribution$sesso))){
+                        plot_title <- tr("diagramma_sesso_nd", change$language)
+                        ax <- list(
+                                title = "",
+                                zeroline = FALSE,
+                                showline = FALSE,
+                                showticklabels = FALSE,
+                                showgrid = FALSE
+                        )
+                        p = plot_ly() %>% layout(title = plot_title, xaxis = ax, yaxis = ax)
+                }else{
+                        plot_title <- tr("distribuzione_per_sesso", change$language)
+                        p <- plot_ly(sex_distribution, labels = ~sesso, values = ~movimenti, type = 'pie', textinfo = 'percent', hoverinfo = 'percent',
+                                     text = ~paste(sesso, ":", movimenti), marker = list(colors = colors, line = list(color = '#FFFFFF', width = 1)), showlegend = TRUE, source = 'sex_pie') %>%
+                                layout(title = plot_title, showlegend = T) %>% config(displayModeBar = FALSE, collaborate = FALSE) 
+                }
+
                 
         })
         
@@ -715,12 +732,23 @@ shinyServer(function(input, output, session) {
                 #c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo")
                 #accomodated_type$tipo_alloggiato
                 print(accomodated_type)
-                xform <- list(categoryorder = "array",
-                              categoryarray = c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo"), title = "")
-                plot_title <- tr("distribuzione_per_alloggiato", change$language)
-                p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', text = ~paste(tipo_alloggiato, ", ", arrivi, "%", sep = ''),  hoverinfo = 'text', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
-                        layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = "(%)")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))               
-                
+                if (nrow(accomodated_type) == 0 | all(is.na(accomodated_type$tipo_alloggiato))){
+                        plot_title <- tr("diagramma_tipoalloggiato_nd", change$language)
+                        ax <- list(
+                                title = "",
+                                zeroline = FALSE,
+                                showline = FALSE,
+                                showticklabels = FALSE,
+                                showgrid = FALSE
+                        )
+                        p = plot_ly() %>% layout(title = plot_title, xaxis = ax, yaxis = ax)  
+                }else{
+                        xform <- list(categoryorder = "array",
+                                      categoryarray = c("Famigliare", "Capo Famiglia", "Ospite Singolo", "Membro Gruppo", "Capo Gruppo"), title = "")
+                        plot_title <- tr("distribuzione_per_alloggiato", change$language)
+                        p <- plot_ly(data = accomodated_type, x = ~tipo_alloggiato, y = ~arrivi, type = 'bar', text = ~paste(tipo_alloggiato, ", ", arrivi, "%", sep = ''),  hoverinfo = 'text', marker = list(color = color_set, line = list(color = 'rgb(8,48,107)', width = 1.5)), source = "accomodated_bar") %>%
+                                layout(title = plot_title, xaxis = xform, bargap = 0.8, yaxis = list(title = "(%)")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d")) 
+                }
         })
         
         
@@ -748,9 +776,24 @@ shinyServer(function(input, output, session) {
           
                 age_range <- get_age_range(aggregate_web_data, province_abbreviation, municipality_code, ev, profile_ev, nation_ev, region_ev, accomodated_ev, change$language)
                 print(age_range)
-                plot_title <- tr("distribuzione_per_eta", change$language)
-                p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, text = ~paste(eta, ", ", arrivi, "%", sep=''), hoverinfo = 'text', type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
-                        layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = "(%)")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
+                if (nrow(age_range) == 0 | all(is.na(age_range$eta))){
+                        plot_title <- tr("diagramma_agerange_nd", change$language)
+                        ax <- list(
+                                title = "",
+                                zeroline = FALSE,
+                                showline = FALSE,
+                                showticklabels = FALSE,
+                                showgrid = FALSE
+                        )
+                        p = plot_ly() %>% layout(title = plot_title, xaxis = ax, yaxis = ax)
+                }else{
+                        plot_title <- tr("distribuzione_per_eta", change$language)
+                        p <- plot_ly(data = age_range, x = ~eta, y = ~arrivi, text = ~paste(eta, ", ", arrivi, "%", sep=''), hoverinfo = 'text', type = 'bar', marker = list(color = 'rgb(158,202,225)', line = list(color = 'rgb(8,48,107)', width = 1.5))) %>%
+                                layout(title = plot_title, bargap = 0.8, xaxis = list(title = tr("fascia_eta", change$language)), yaxis = list(title = "(%)")) %>% config(displaylogo = F, collaborate = F, modeBarButtonsToRemove = list("zoom2d", "zoomIn2d", "zoomOut2d", "toImage", "resetScale2d"))
+                        
+                }
+                
+
         })
         
         

@@ -26,7 +26,8 @@ shinyUI(fluidPage(
    useShinyjs(),
    extendShinyjs(text = "shinyjs.resetProfileClick = function() { Shiny.onInputChange('.clientValue-plotly_click-sex_pie', 'null'); }"),
    extendShinyjs(text = "shinyjs.resetProvenienceClick = function() { Shiny.onInputChange('.clientValue-plotly_click-prov_pie', 'null'); }"),
-
+   extendShinyjs(text = "shinyjs.resetProvByRegionClick = function() { Shiny.onInputChange('.clientValue-plotly_click-region_bar', 'null'); }"),
+   extendShinyjs(text = "shinyjs.resetProvByNationClick = function() { Shiny.onInputChange('.clientValue-plotly_click-nation_bar', 'null'); }"),
  
   div( 
        br(),          
