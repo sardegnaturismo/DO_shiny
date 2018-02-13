@@ -107,8 +107,8 @@ RUN R -e "install.packages(c('shiny','rmarkdown','shinyjs','leaflet','rgdal','pl
 EXPOSE 3838
 
 RUN mkdir -p /var/log/shiny-server && chown shiny.shiny /var/log/shiny-server
-COPY shiny-server.conf /etc/shiny-server/shiny-server.conf
-COPY ./DO_shiny /srv/shiny-server/dashboard
+COPY Docker/shiny-server.conf /etc/shiny-server/shiny-server.conf
+COPY * /srv/shiny-server/dashboard/
 RUN chmod -R 777  /srv/shiny-server/dashboard
 
 CMD ["/opt/shiny-server/bin/shiny-server"]
