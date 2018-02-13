@@ -10,8 +10,7 @@ phases:
   build:
     commands:
       - echo Build started on `date`
-      - echo Building the Docker image...   
-      - cd $CODEBUILD_SRC_DIR       
+      - echo Building the Docker image...       
       - docker build -t $REPOSITORY_URI:latest Docker 
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$CONTAINER_NAME 
       ## $REPOSITORY_URI:$IMAGE_TAG  
@@ -26,3 +25,4 @@ phases:
       - printf '[{"name":"%s","imageUri":"%s"}]' $CONTAINER_NAME $REPOSITORY_URI:$CONTAINER_NAME > imagedefinitions.json
 artifacts:
     files: imagedefinitions.json
+    
