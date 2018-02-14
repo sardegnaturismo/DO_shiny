@@ -110,7 +110,7 @@ RUN mkdir -p /var/log/shiny-server && chown shiny.shiny /var/log/shiny-server
 COPY ./config/shiny-server.conf /etc/shiny-server/shiny-server.conf
 COPY . /srv/shiny-server/dashboard/
 RUN chmod -R 777  /srv/shiny-server/dashboard
-
+ 
 CMD ["/opt/shiny-server/bin/shiny-server"]
  
 
